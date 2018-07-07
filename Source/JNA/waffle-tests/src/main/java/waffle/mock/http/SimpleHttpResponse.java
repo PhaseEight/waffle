@@ -80,6 +80,11 @@ public class SimpleHttpResponse extends HttpServletResponseWrapper {
         super(Mockito.mock(HttpServletResponse.class));
     }
 
+    @Override
+    public boolean containsHeader(final String headerName) {
+        return headers.containsKey(headerName);
+    }
+
     /**
      * Gets the status.
      *
