@@ -178,9 +178,8 @@ public class NegotiateSecurityFilter implements Filter {
                     return;
                 }
             } catch (final IOException e) {
-                NegotiateSecurityFilter.LOGGER.warn("error logging in user: {}", e.getMessage());
+                NegotiateSecurityFilter.LOGGER.warn("error logging in user using Auth Scheme [{}]: {}", authorizationHeader.getSecurityPackage(), e.getMessage());
                 if (authorizationHeader.isBasicAuthorizationHeader()) {
-                    NegotiateSecurityFilter.LOGGER.warn("Basic Authorization Exception; send Forbidden");
                     this.sendForbidden(response);
                 } else {
                     this.sendUnauthorized(response, true);
