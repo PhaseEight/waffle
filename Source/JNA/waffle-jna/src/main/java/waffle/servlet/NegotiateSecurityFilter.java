@@ -178,7 +178,8 @@ public class NegotiateSecurityFilter implements Filter {
                     return;
                 }
             } catch (final IOException e) {
-                NegotiateSecurityFilter.LOGGER.warn("error logging in user using Auth Scheme [{}]: {}", authorizationHeader.getSecurityPackage(), e.getMessage());
+                NegotiateSecurityFilter.LOGGER.warn("error logging in user using Auth Scheme [{}]: {}",
+                        authorizationHeader.getSecurityPackage(), e.getMessage());
                 if (authorizationHeader.isBasicAuthorizationHeader()) {
                     this.sendForbidden(response);
                 } else {
@@ -192,7 +193,11 @@ public class NegotiateSecurityFilter implements Filter {
             try {
                 if (!this.allowGuestLogin && windowsIdentity.isGuest()) {
                     NegotiateSecurityFilter.LOGGER.warn("guest login disabled: {}", windowsIdentity.getFqn());
-                    this.sendForbidden(response);
+                    if (authorizationHeader.isBasicAuthorizationHeader()) {
+                        this.sendForbidden(response);
+                    } else {
+                        this.sendUnauthorized(response, true);
+                    }
                     return;
                 }
 
