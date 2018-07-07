@@ -47,10 +47,10 @@ import waffle.windows.auth.impl.WindowsAuthProviderImpl;
 /**
  * A Negotiate (NTLM/Kerberos) Security Filter.
  *
- * Failed Authentication is returned a HTTP 403 Forbidden response
- * https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication
+ * Basic Authentication failures result in 403 Forbidden HTTP Status
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication">https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication</a>
  *
- * @author dblock[at]dblock[dot]org
+ * @author dblock[at]dblock[dot]org*
  */
 public class NegotiateSecurityFilter implements Filter {
 
