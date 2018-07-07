@@ -169,17 +169,22 @@ public class NegotiateSecurityFilter implements Filter {
             IWindowsIdentity windowsIdentity;
             try {
                 windowsIdentity = this.providers.doFilter(request, response);
-                boolean auth = response.containsHeader("WWW-Authenticate");
-                if (response.containsHeader("WWW-Authenticate") && windowsIdentity == null) {
-                    return;
-                } else if (windowsIdentity == null) {
-                    this.sendForbidden(response);
+                // standard behaviour for NTLM and Negotiate if the Providers have set WWW-Authenticate
+                if(windowsIdentity == null){
+                    if(authorizationHeader.isBasicAuthorizationHeader()) {
+                        this.sendForbidden(response);
+                    }
                     return;
                 }
             } catch (final IOException e) {
                 NegotiateSecurityFilter.LOGGER.warn("error logging in user: {}", e.getMessage());
                 NegotiateSecurityFilter.LOGGER.trace("", e);
-                this.sendUnauthorized(response, true);
+                if(authorizationHeader.isBasicAuthorizationHeader()){
+                    this.sendForbidden(response);
+                }
+                else {
+                    this.sendUnauthorized(response, true);
+                }
                 return;
             }
 

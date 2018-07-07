@@ -168,7 +168,15 @@ public class AuthorizationHeader {
         if (this.isNull()) {
             return false;
         }
-
         return this.getSecurityPackage().toUpperCase(Locale.ENGLISH).equalsIgnoreCase("BEARER");
     }
+
+    public boolean isBasicAuthorizationHeader() {
+        if (this.isNull()) {
+            return false;
+        }
+
+        return this.getSecurityPackage().toUpperCase(Locale.ENGLISH).equalsIgnoreCase("BASIC");
+    }
+
 }
