@@ -21,15 +21,14 @@ import javax.security.auth.Subject;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
+import waffle.mock.MockFailedAuthenticationWindowsAuthProvider;
 import waffle.mock.MockWindowsAuthProvider;
 import waffle.mock.http.SimpleFilterChain;
 import waffle.mock.http.SimpleHttpRequest;
 import waffle.mock.http.SimpleHttpResponse;
+import waffle.servlet.spi.NegotiateSecurityFilterProvider;
 import waffle.windows.auth.impl.WindowsAccountImpl;
 
 /**
@@ -51,8 +50,6 @@ public class BasicSecurityFilterTests {
     @BeforeEach
     public void setUp() throws ServletException {
         this.filter = new NegotiateSecurityFilter();
-        this.filter.setAuth(new MockWindowsAuthProvider());
-        this.filter.init(null);
     }
 
     /**
@@ -73,6 +70,8 @@ public class BasicSecurityFilterTests {
      */
     @Test
     public void testBasicAuth() throws IOException, ServletException {
+        this.filter.setAuth(new MockWindowsAuthProvider());
+        this.filter.init(null);
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.setMethod("GET");
 
@@ -88,4 +87,23 @@ public class BasicSecurityFilterTests {
         Assertions.assertNotNull(subject);
         assertThat(subject.getPrincipals().size()).isGreaterThan(0);
     }
+
+    @Test
+    public void testFailedBasicAuth() throws IOException, ServletException {
+        this.filter.setAuth(new MockFailedAuthenticationWindowsAuthProvider());
+        this.filter.init(null);
+        final SimpleHttpRequest request = new SimpleHttpRequest();
+        request.setMethod("GET");
+
+        final String userHeaderValue = WindowsAccountImpl.getCurrentUsername() + ":password";
+        final String basicAuthHeader = "Basic "
+                + Base64.getEncoder().encodeToString(userHeaderValue.getBytes(StandardCharsets.UTF_8));
+        request.addHeader("Authorization", basicAuthHeader);
+
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+        final FilterChain filterChain = new SimpleFilterChain();
+        this.filter.doFilter(request, response, filterChain);
+        Assertions.assertEquals(403, response.getStatus());
+    }
+
 }
