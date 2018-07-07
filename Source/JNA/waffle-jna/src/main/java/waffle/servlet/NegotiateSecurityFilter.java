@@ -172,6 +172,7 @@ public class NegotiateSecurityFilter implements Filter {
                 // standard behaviour for NTLM and Negotiate if the Providers have set WWW-Authenticate
                 if(windowsIdentity == null){
                     if(authorizationHeader.isBasicAuthorizationHeader()) {
+                        NegotiateSecurityFilter.LOGGER.warn("Basic Authorization failed; send Forbidden");
                         this.sendForbidden(response);
                     }
                     return;
@@ -180,6 +181,7 @@ public class NegotiateSecurityFilter implements Filter {
                 NegotiateSecurityFilter.LOGGER.warn("error logging in user: {}", e.getMessage());
                 NegotiateSecurityFilter.LOGGER.trace("", e);
                 if(authorizationHeader.isBasicAuthorizationHeader()){
+                    NegotiateSecurityFilter.LOGGER.warn("Basic Authorization Exception; send Forbidden");
                     this.sendForbidden(response);
                 }
                 else {
