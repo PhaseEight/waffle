@@ -47,6 +47,9 @@ import waffle.windows.auth.impl.WindowsAuthProviderImpl;
 /**
  * A Negotiate (NTLM/Kerberos) Security Filter.
  *
+ * Failed Authentication is returned a HTTP 403 Forbidden response
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication
+ *
  * @author dblock[at]dblock[dot]org
  */
 public class NegotiateSecurityFilter implements Filter {
@@ -166,7 +169,11 @@ public class NegotiateSecurityFilter implements Filter {
             IWindowsIdentity windowsIdentity;
             try {
                 windowsIdentity = this.providers.doFilter(request, response);
-                if (windowsIdentity == null) {
+                boolean auth = response.containsHeader("WWW-Authenticate");
+                if (response.containsHeader("WWW-Authenticate") && windowsIdentity == null) {
+                    return;
+                } else if (windowsIdentity == null) {
+                    this.sendForbidden(response);
                     return;
                 }
             } catch (final IOException e) {
@@ -180,7 +187,7 @@ public class NegotiateSecurityFilter implements Filter {
             try {
                 if (!this.allowGuestLogin && windowsIdentity.isGuest()) {
                     NegotiateSecurityFilter.LOGGER.warn("guest login disabled: {}", windowsIdentity.getFqn());
-                    this.sendUnauthorized(response, true);
+                    this.sendForbidden(response);
                     return;
                 }
 
@@ -475,6 +482,22 @@ public class NegotiateSecurityFilter implements Filter {
                 response.setHeader("Connection", "keep-alive");
             }
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            response.flushBuffer();
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Send a 403 Forbidden for a failed Authentication Attempt.
+     *
+     * @param response
+     *            HTTP Response
+     */
+    private void sendForbidden(final HttpServletResponse response) {
+        try {
+            response.setHeader("Connection", "close");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
             response.flushBuffer();
         } catch (final IOException e) {
             throw new RuntimeException(e);
