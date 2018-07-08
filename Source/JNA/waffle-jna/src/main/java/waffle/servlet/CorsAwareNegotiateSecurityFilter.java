@@ -46,6 +46,12 @@ public class CorsAwareNegotiateSecurityFilter extends NegotiateSecurityFilter im
     public void init(final FilterConfig filterConfig) throws ServletException {
         CorsAwareNegotiateSecurityFilter.LOGGER.info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Starting");
         super.init(filterConfig);
+        if (filterConfig.getInitParameter("excludeBearerAuthorization") == null) {
+            super.setExcludeBearerAuthorization(true);
+        }
+        if (filterConfig.getInitParameter("excludeCorsPreflight") == null) {
+            super.setExcludeCorsPreflight(true);
+        }
         CorsAwareNegotiateSecurityFilter.LOGGER.info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Started");
     }
 
@@ -53,27 +59,27 @@ public class CorsAwareNegotiateSecurityFilter extends NegotiateSecurityFilter im
     public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
             throws IOException, ServletException {
 
-        CorsAwareNegotiateSecurityFilter.LOGGER.info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Filtering");
+        CorsAwareNegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Filtering");
 
         final HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         final AuthorizationHeader authorizationHeader = new AuthorizationHeader(httpServletRequest);
 
-        if (CorsPreflightCheck.isPreflight(httpServletRequest)) {
-            CorsAwareNegotiateSecurityFilter.LOGGER.info(
+        if (super.isExcludeCorsPreflight() && CorsPreflightCheck.isPreflight(httpServletRequest)) {
+            CorsAwareNegotiateSecurityFilter.LOGGER.debug(
                     "[waffle.servlet.CorsAwareNegotiateSecurityFilter] Request is CORS preflight; continue filter chain");
             chain.doFilter(request, response);
-        } else if (authorizationHeader.isBearerAuthorizationHeader()) {
-            CorsAwareNegotiateSecurityFilter.LOGGER
-                    .info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Request is Bearer, continue filter chain");
+        } else if (super.isExcludeBearerAuthorization() && authorizationHeader.isBearerAuthorizationHeader()) {
+            CorsAwareNegotiateSecurityFilter.LOGGER.debug(
+                    "[waffle.servlet.CorsAwareNegotiateSecurityFilter] Request is Bearer, continue filter chain");
             chain.doFilter(request, response);
         } else {
             CorsAwareNegotiateSecurityFilter.LOGGER
-                    .info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Request is Not CORS preflight");
+                    .debug("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Request is Not CORS preflight");
 
             super.doFilter(request, response, chain);
 
             CorsAwareNegotiateSecurityFilter.LOGGER
-                    .info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Authentication Completed");
+                    .debug("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Authentication Completed");
         }
     }
 

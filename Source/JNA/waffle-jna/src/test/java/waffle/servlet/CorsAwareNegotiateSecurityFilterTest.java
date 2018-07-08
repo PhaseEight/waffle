@@ -13,6 +13,7 @@ package waffle.servlet;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -21,6 +22,7 @@ import mockit.Mocked;
 import mockit.Tested;
 import mockit.Verifications;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import waffle.util.CorsPreflightCheck;
@@ -32,23 +34,23 @@ class CorsAwareNegotiateSecurityFilterTest {
 
     /** The cors aware negotiate security filter. */
     @Tested
-    CorsAwareNegotiateSecurityFilter corsAwareNegotiateSecurityFilter;
+    CorsAwareNegotiateSecurityFilter corsAwareNegotiateSecurityFilter = null;
 
     /** The preflight request. */
     @Mocked
-    HttpServletRequest preflightRequest;
+    HttpServletRequest preflightRequest = null;
 
     /** The preflight response. */
     @Mocked
-    HttpServletResponse preflightResponse;
+    HttpServletResponse preflightResponse = null;
 
     /** The chain. */
     @Mocked
-    FilterChain chain;
+    FilterChain chain = null;
 
     /** The filter config. */
     @Mocked
-    FilterConfig filterConfig;
+    FilterConfig filterConfig = null;
 
     /**
      * Do filter test cors preflight request.
@@ -72,6 +74,7 @@ class CorsAwareNegotiateSecurityFilterTest {
             }
         };
 
+        this.corsAwareNegotiateSecurityFilter.init(filterConfig);
         this.corsAwareNegotiateSecurityFilter.doFilter(this.preflightRequest, this.preflightResponse, this.chain);
 
         new Verifications() {

@@ -42,7 +42,7 @@ public class NegotiateSecurityFilterLoadTests {
      */
     @Test
     public void launchLoadTest() throws RunnerException {
-        final Options opt = new OptionsBuilder().threads(10).measurementIterations(10).build();
+        final Options opt = new OptionsBuilder().threads(1).measurementIterations(2).build();
         new Runner(opt).run();
     }
 

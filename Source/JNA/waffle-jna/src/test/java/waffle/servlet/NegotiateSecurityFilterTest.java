@@ -28,6 +28,7 @@ import mockit.Verifications;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import waffle.servlet.spi.BasicSecurityFilterProvider;
 import waffle.util.CorsPreflightCheck;
 
 /**
@@ -45,7 +46,7 @@ class NegotiateSecurityFilterTest {
 
     /** The negotiate security filter. */
     @Tested
-    private NegotiateSecurityFilter negotiateSecurityFilter;
+    private NegotiateSecurityFilter negotiateSecurityFilter = null;
 
     /** The init parameter names. */
     private final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
@@ -105,9 +106,9 @@ class NegotiateSecurityFilterTest {
 
         final Field excludeCorsPreflight = this.negotiateSecurityFilter.getClass()
                 .getDeclaredField("excludeCorsPreflight");
+        excludeCorsPreflight.setAccessible(true);
         final Field excludeBearerAuthorization = this.negotiateSecurityFilter.getClass()
                 .getDeclaredField("excludeBearerAuthorization");
-        excludeCorsPreflight.setAccessible(true);
         excludeBearerAuthorization.setAccessible(true);
         Assertions.assertTrue(excludeCorsPreflight.getBoolean(this.negotiateSecurityFilter));
         Assertions.assertTrue(excludeBearerAuthorization.getBoolean(this.negotiateSecurityFilter));
@@ -141,7 +142,6 @@ class NegotiateSecurityFilterTest {
     void testExcludeCorsAndOAUTHBearerAuthorization_doFilter(@Mocked final HttpServletRequest request,
             @Mocked final HttpServletResponse response, @Mocked final FilterChain chain,
             @Mocked final FilterConfig filterConfig) throws Exception {
-        this.getClass().getClassLoader().getResource("logback.xml");
 
         new Expectations() {
             {
@@ -182,4 +182,56 @@ class NegotiateSecurityFilterTest {
 
     }
 
+    /**
+     * Test cors and bearer authorization I init.
+     *
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
+     */
+    @Test
+    void testNegotiateSecurityFilterProviderWithCharsetI_init(@Mocked final FilterConfig filterConfig)
+            throws Exception {
+
+        Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+
+            /** The Constant serialVersionUID. */
+            private static final long serialVersionUID = 1L;
+
+            {
+                this.add("securityFilterProviders");
+                this.add("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
+            }
+        });
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = initParameterNames;
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.result = "waffle.servlet.spi.BasicSecurityFilterProvider";
+                filterConfig.getInitParameter("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
+                this.result = "";
+            }
+        };
+
+        this.negotiateSecurityFilter.init(filterConfig);
+
+        final Field charset = (this.negotiateSecurityFilter.getProviders()
+                .getByClassName(BasicSecurityFilterProvider.class.getName())).getClass().getDeclaredField("charset");
+        ;
+        charset.setAccessible(true);
+
+        Assertions.assertEquals("", charset.get(this.negotiateSecurityFilter.getProviders()
+                .getByClassName(BasicSecurityFilterProvider.class.getName())));
+
+        new Verifications() {
+            {
+                filterConfig.getInitParameter(this.withInstanceOf(String.class));
+                this.minTimes = 2;
+            }
+        };
+
+    }
 }
