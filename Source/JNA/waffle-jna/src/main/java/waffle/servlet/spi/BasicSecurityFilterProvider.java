@@ -38,6 +38,8 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     /** The realm. */
     private String realm = "BasicSecurityFilterProvider";
 
+    private String charset = "UTF-8";
+
     /** The auth. */
     private final IWindowsAuthProvider auth;
 
@@ -77,7 +79,13 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
 
     @Override
     public void sendUnauthorized(final HttpServletResponse response) {
-        response.addHeader("WWW-Authenticate", "Basic realm=\"" + this.realm + "\"");
+        String challenge = "Basic realm=\"" + this.realm + "\", charset=\"UTF-8\"";
+        if ("".equals(charset)) {
+            // some user agents might not work correctly if they see the , charset parameter after realm
+            challenge = "Basic realm=\"" + this.realm + "\"";
+        }
+        response.addHeader("WWW-Authenticate", challenge);
+
     }
 
     /**
@@ -109,10 +117,24 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
      */
     @Override
     public void initParameter(final String parameterName, final String parameterValue) {
-        if ("realm".equals(parameterName)) {
-            this.setRealm(parameterValue);
-        } else {
-            throw new InvalidParameterException(parameterName);
+
+        switch (parameterName) {
+            case "realm":
+                this.setRealm(parameterValue);
+                break;
+            case "charset":
+                this.setCharset(parameterValue);
+                break;
+            default:
+                throw new InvalidParameterException(parameterName);
         }
+    }
+
+    private void setCharset(String charset) {
+        this.charset = (charset == null) ? "" : charset.trim();
+    }
+
+    public String getCharset() {
+        return this.charset;
     }
 }
