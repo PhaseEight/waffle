@@ -11,13 +11,12 @@
  */
 package waffle.servlet;
 
+import com.sun.jna.Platform;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.security.auth.Subject;
@@ -48,7 +47,12 @@ import waffle.windows.auth.impl.WindowsAuthProviderImpl;
  * A Negotiate (NTLM/Kerberos) Security Filter.
  *
  * Basic Authentication failures result in 403 Forbidden HTTP Status
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication">https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication</a>
+ * 
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication">https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication</a>
+ *      <a href="https://tools.ietf.org/html/rfc7617">https://tools.ietf.org/html/rfc7617</a>
+ *      <a href="https://tools.ietf.org/html/rfc7235">https://tools.ietf.org/html/rfc7235</a>
+ *
  *
  * @author dblock[at]dblock[dot]org*
  */
@@ -59,9 +63,6 @@ public class NegotiateSecurityFilter implements Filter {
 
     /** The Constant PRINCIPALSESSIONKEY. */
     private static final String PRINCIPALSESSIONKEY = NegotiateSecurityFilter.class.getName() + ".PRINCIPAL";
-
-    /** The windows flag. */
-    private static Boolean windows;
 
     /** The principal format. */
     private PrincipalFormat principalFormat = PrincipalFormat.FQN;
@@ -78,20 +79,20 @@ public class NegotiateSecurityFilter implements Filter {
     /** The exclusion filter. */
     private String[] excludePatterns;
 
-    /** The allow guest login. */
+    /** The allow guest login flag. */
     private boolean allowGuestLogin = true;
 
-    /** The impersonate. */
+    /** The impersonate flag. */
     private boolean impersonate;
 
-    /** The exclusion bearer authorization. */
+    /** The exclusion for bearer authorization flag. */
     private boolean excludeBearerAuthorization;
 
-    /** The exclusions cors pre flight. */
+    /** The exclusions for cors pre flight flag. */
     private boolean excludeCorsPreflight;
 
-    /** The disable SSO. */
-    private boolean disableSSO;
+    /** The enable filter flag. */
+    private boolean enabled = true;
 
     /**
      * Instantiates a new negotiate security filter.
@@ -116,15 +117,15 @@ public class NegotiateSecurityFilter implements Filter {
                 Integer.valueOf(request.getContentLength()));
 
         // If we are not in a windows environment, resume filter chain
-        if (!NegotiateSecurityFilter.isWindows()) {
+        if (!Platform.isWindows()) {
             NegotiateSecurityFilter.LOGGER.debug("Running in a non windows environment, SSO skipped");
             chain.doFilter(request, response);
             return;
         }
 
-        // If sso is disabled, resume filter chain
-        if (this.disableSSO) {
-            NegotiateSecurityFilter.LOGGER.debug("SSO is disabled, resuming filter chain");
+        // If this filter is disabled resume filter chain
+        if (!this.enabled) {
+            NegotiateSecurityFilter.LOGGER.debug("filter disabled, resuming filter chain");
             chain.doFilter(request, response);
             return;
         }
@@ -142,7 +143,7 @@ public class NegotiateSecurityFilter implements Filter {
         }
 
         // If exclude cores pre-flight and is pre flight, resume the filter chain
-        if (this.excludeCorsPreflight && CorsPreflightCheck.isPreflight(request)) {
+        if (this.isExcludeCorsPreflight() && CorsPreflightCheck.isPreflight(request)) {
             NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] CORS preflight");
             chain.doFilter(sreq, sres);
             return;
@@ -151,7 +152,7 @@ public class NegotiateSecurityFilter implements Filter {
         final AuthorizationHeader authorizationHeader = new AuthorizationHeader(request);
 
         // If exclude bearer authorization and is bearer authorization, result the filter chain
-        if (this.excludeBearerAuthorization && authorizationHeader.isBearerAuthorizationHeader()) {
+        if (this.isExcludeBearerAuthorization() && authorizationHeader.isBearerAuthorizationHeader()) {
             NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] Authorization: Bearer");
             chain.doFilter(sreq, sres);
             return;
@@ -171,7 +172,7 @@ public class NegotiateSecurityFilter implements Filter {
                 windowsIdentity = this.providers.doFilter(request, response);
                 // standard behaviour for NTLM and Negotiate if the Providers have set WWW-Authenticate
                 if (windowsIdentity == null) {
-                    if (authorizationHeader.isBasicAuthorizationHeader()) {
+                    if (authorizationHeader.isLogonAttempt()) {
                         NegotiateSecurityFilter.LOGGER.warn("Basic Authorization failed; send Forbidden");
                         this.sendForbidden(response);
                     }
@@ -180,7 +181,7 @@ public class NegotiateSecurityFilter implements Filter {
             } catch (final IOException e) {
                 NegotiateSecurityFilter.LOGGER.warn("error logging in user using Auth Scheme [{}]: {}",
                         authorizationHeader.getSecurityPackage(), e.getMessage());
-                if (authorizationHeader.isBasicAuthorizationHeader()) {
+                if (authorizationHeader.isLogonAttempt()) {
                     this.sendForbidden(response);
                 } else {
                     this.sendUnauthorized(response, true);
@@ -193,7 +194,7 @@ public class NegotiateSecurityFilter implements Filter {
             try {
                 if (!this.allowGuestLogin && windowsIdentity.isGuest()) {
                     NegotiateSecurityFilter.LOGGER.warn("guest login disabled: {}", windowsIdentity.getFqn());
-                    if (authorizationHeader.isBasicAuthorizationHeader()) {
+                    if (authorizationHeader.isLogonAttempt()) {
                         this.sendForbidden(response);
                     } else {
                         this.sendUnauthorized(response, true);
@@ -338,36 +339,37 @@ public class NegotiateSecurityFilter implements Filter {
                 final String parameterName = parameterNames.nextElement();
                 final String parameterValue = filterConfig.getInitParameter(parameterName);
                 NegotiateSecurityFilter.LOGGER.debug("Init Param: '{}={}'", parameterName, parameterValue);
-                switch (parameterName) {
-                    case "principalFormat":
+                InitParameter initParam = InitParameter.get(parameterName);
+                switch (initParam) {
+                    case ENABLED:
+                        this.enabled = Boolean.parseBoolean(parameterValue);
+                        break;
+                    case PRINCIPAL_FORMAT:
                         this.principalFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
                         break;
-                    case "roleFormat":
+                    case ROLE_FORMAT:
                         this.roleFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
                         break;
-                    case "allowGuestLogin":
+                    case ALLOW_GUEST_LOGIN:
                         this.allowGuestLogin = Boolean.parseBoolean(parameterValue);
                         break;
-                    case "impersonate":
+                    case IMPERSONATE:
                         this.impersonate = Boolean.parseBoolean(parameterValue);
                         break;
-                    case "securityFilterProviders":
+                    case SECURITY_FILTER_PROVIDER:
                         providerNames = parameterValue.split("\\s+");
                         break;
-                    case "authProvider":
+                    case AUTH_PROVIDER:
                         authProvider = parameterValue;
                         break;
-                    case "excludePatterns":
+                    case EXCLUDE_PATTERNS:
                         this.excludePatterns = parameterValue.split("\\s+");
                         break;
-                    case "excludeCorsPreflight":
-                        this.excludeCorsPreflight = Boolean.parseBoolean(parameterValue);
+                    case EXCLUDE_CORS_PREFLIGHT:
+                        this.setExcludeCorsPreflight(Boolean.parseBoolean(parameterValue));
                         break;
-                    case "excludeBearerAuthorization":
-                        this.excludeBearerAuthorization = Boolean.parseBoolean(parameterValue);
-                        break;
-                    case "disableSSO":
-                        this.disableSSO = Boolean.parseBoolean(parameterValue);
+                    case EXCLUDE_BEARER_AUTHORIZATION:
+                        this.setExcludeBearerAuthorization(Boolean.parseBoolean(parameterValue));
                         break;
                     default:
                         implParameters.put(parameterName, parameterValue);
@@ -570,11 +572,71 @@ public class NegotiateSecurityFilter implements Filter {
         return this.providers;
     }
 
-    private static boolean isWindows() {
-        if (NegotiateSecurityFilter.windows == null) {
-            NegotiateSecurityFilter.windows = System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("win");
-        }
-        return NegotiateSecurityFilter.windows.booleanValue();
+    /**
+     * Checks if must continue if Authorization Authentication Scheme is Bearer
+     *
+     * @return true if Bearer Authorization is ignored, false otherwise
+     */
+    public boolean isExcludeBearerAuthorization() {
+        return this.excludeBearerAuthorization;
     }
 
+    public void setExcludeBearerAuthorization(boolean excludeBearerAuthorization) {
+        this.excludeBearerAuthorization = excludeBearerAuthorization;
+    }
+
+    /**
+     * Checks if must continue if Authorization Authentication Scheme is Bearer
+     *
+     * @return true if Bearer Authorization is ignored, false otherwise
+     */
+    public boolean isExcludeCorsPreflight() {
+        return this.excludeCorsPreflight;
+    }
+
+    public void setExcludeCorsPreflight(boolean excludeCorsPreflight) {
+        this.excludeCorsPreflight = excludeCorsPreflight;
+    }
+
+    public enum InitParameter {
+        ENABLED ("enabled"),
+        PRINCIPAL_FORMAT("principalFormat"),
+        ROLE_FORMAT("roleFormat"),
+        ALLOW_GUEST_LOGIN("allowGuestLogin"),
+        IMPERSONATE("impersonate"),
+        SECURITY_FILTER_PROVIDER("securityFilterProviders"),
+        AUTH_PROVIDER("authProvider"),
+        EXCLUDE_PATTERNS("excludePatterns"),
+        EXCLUDE_CORS_PREFLIGHT("excludeCorsPreflight"),
+        EXCLUDE_BEARER_AUTHORIZATION("excludeBearerAuthorization"),
+        PROVIDER_PARAMETER("provider");
+
+        private final String paramName;
+        public String getParamName(){
+            return this.paramName;
+        }
+        public String toString() {
+            return this.getParamName();
+        }
+        InitParameter(String name){
+            this.paramName = name;
+        }
+        private static final Map<String,InitParameter> lookup =
+                new HashMap();
+        static {
+            //Create reverse lookup hash map
+            for(InitParameter ip : InitParameter.values())
+                lookup.put(ip.getParamName(), ip);
+        }
+        public static InitParameter get(String paramName) {
+            //the reverse lookup by simply getting
+            //the value from the lookup HashMap.
+            InitParameter parameter = lookup.get(paramName);
+            if(parameter == null){
+                parameter = PROVIDER_PARAMETER;
+            }
+            return parameter;
+        }
+
+    }
 }
