@@ -15,6 +15,7 @@ import com.sun.jna.Platform;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.security.InvalidParameterException;
 import java.security.Principal;
 import java.util.*;
 import java.util.Map.Entry;
@@ -340,40 +341,44 @@ public class NegotiateSecurityFilter implements Filter {
                 final String parameterValue = filterConfig.getInitParameter(parameterName);
                 NegotiateSecurityFilter.LOGGER.debug("Init Param: '{}={}'", parameterName, parameterValue);
                 InitParameter initParam = InitParameter.get(parameterName);
-                switch (initParam) {
-                    case ENABLED:
-                        this.enabled = Boolean.parseBoolean(parameterValue);
-                        break;
-                    case PRINCIPAL_FORMAT:
-                        this.principalFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
-                        break;
-                    case ROLE_FORMAT:
-                        this.roleFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
-                        break;
-                    case ALLOW_GUEST_LOGIN:
-                        this.allowGuestLogin = Boolean.parseBoolean(parameterValue);
-                        break;
-                    case IMPERSONATE:
-                        this.impersonate = Boolean.parseBoolean(parameterValue);
-                        break;
-                    case SECURITY_FILTER_PROVIDER:
-                        providerNames = parameterValue.split("\\s+");
-                        break;
-                    case AUTH_PROVIDER:
-                        authProvider = parameterValue;
-                        break;
-                    case EXCLUDE_PATTERNS:
-                        this.excludePatterns = parameterValue.split("\\s+");
-                        break;
-                    case EXCLUDE_CORS_PREFLIGHT:
-                        this.setExcludeCorsPreflight(Boolean.parseBoolean(parameterValue));
-                        break;
-                    case EXCLUDE_BEARER_AUTHORIZATION:
-                        this.setExcludeBearerAuthorization(Boolean.parseBoolean(parameterValue));
-                        break;
-                    default:
-                        implParameters.put(parameterName, parameterValue);
-                        break;
+                if (initParam == null) {
+                    throw new ServletException(String.format("Invalid parameter: %s", parameterName));
+                } else {
+                    switch (initParam) {
+                        case ENABLED:
+                            this.enabled = Boolean.parseBoolean(parameterValue);
+                            break;
+                        case PRINCIPAL_FORMAT:
+                            this.principalFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
+                            break;
+                        case ROLE_FORMAT:
+                            this.roleFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
+                            break;
+                        case ALLOW_GUEST_LOGIN:
+                            this.allowGuestLogin = Boolean.parseBoolean(parameterValue);
+                            break;
+                        case IMPERSONATE:
+                            this.impersonate = Boolean.parseBoolean(parameterValue);
+                            break;
+                        case SECURITY_FILTER_PROVIDER:
+                            providerNames = parameterValue.split("\\s+");
+                            break;
+                        case AUTH_PROVIDER:
+                            authProvider = parameterValue;
+                            break;
+                        case EXCLUDE_PATTERNS:
+                            this.excludePatterns = parameterValue.split("\\s+");
+                            break;
+                        case EXCLUDE_CORS_PREFLIGHT:
+                            this.setExcludeCorsPreflight(Boolean.parseBoolean(parameterValue));
+                            break;
+                        case EXCLUDE_BEARER_AUTHORIZATION:
+                            this.setExcludeBearerAuthorization(Boolean.parseBoolean(parameterValue));
+                            break;
+                        case PROVIDER_PARAMETER:
+                            implParameters.put(parameterName, parameterValue);
+                            break;
+                    }
                 }
             }
         }
@@ -599,7 +604,7 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     public enum InitParameter {
-        ENABLED ("enabled"),
+        ENABLED("enabled"),
         PRINCIPAL_FORMAT("principalFormat"),
         ROLE_FORMAT("roleFormat"),
         ALLOW_GUEST_LOGIN("allowGuestLogin"),
@@ -612,27 +617,31 @@ public class NegotiateSecurityFilter implements Filter {
         PROVIDER_PARAMETER("provider");
 
         private final String paramName;
-        public String getParamName(){
+
+        public String getParamName() {
             return this.paramName;
         }
+
         public String toString() {
             return this.getParamName();
         }
-        InitParameter(String name){
+
+        InitParameter(String name) {
             this.paramName = name;
         }
-        private static final Map<String,InitParameter> lookup =
-                new HashMap();
+
+        private static final Map<String, InitParameter> lookup = new HashMap();
         static {
-            //Create reverse lookup hash map
-            for(InitParameter ip : InitParameter.values())
+            // Create reverse lookup hash map
+            for (InitParameter ip : InitParameter.values())
                 lookup.put(ip.getParamName(), ip);
         }
+
         public static InitParameter get(String paramName) {
-            //the reverse lookup by simply getting
-            //the value from the lookup HashMap.
+            // the reverse lookup by simply getting
+            // the value from the lookup HashMap.
             InitParameter parameter = lookup.get(paramName);
-            if(parameter == null){
+            if (parameter == null && paramName.indexOf("/") > 0) {
                 parameter = PROVIDER_PARAMETER;
             }
             return parameter;

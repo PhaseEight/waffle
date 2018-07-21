@@ -12,8 +12,11 @@
 package waffle.servlet.spi;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,7 +41,21 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     /** The realm. */
     private String realm = "BasicSecurityFilterProvider";
 
-    private String charset = "UTF-8";
+    private boolean includeAuthenticationCharset = true;
+
+    private Charset charset = StandardCharsets.UTF_8;
+
+    public static Map SupportedCharsets = new HashMap<String, Charset>() {
+
+        /** The Constant serialVersionUID. */
+        private static final long serialVersionUID = 1L;
+
+        {
+            this.put(StandardCharsets.UTF_8.name(), StandardCharsets.UTF_8);
+            this.put(StandardCharsets.US_ASCII.name(), StandardCharsets.US_ASCII);
+        }
+
+    };
 
     /** The auth. */
     private final IWindowsAuthProvider auth;
@@ -58,7 +75,7 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
             throws IOException {
 
         final AuthorizationHeader authorizationHeader = new AuthorizationHeader(request);
-        final String usernamePassword = new String(authorizationHeader.getTokenBytes(), StandardCharsets.UTF_8);
+        final String usernamePassword = new String(authorizationHeader.getTokenBytes(), charset);
         final String[] usernamePasswordArray = usernamePassword.split(":", 2);
         if (usernamePasswordArray.length != 2) {
             throw new RuntimeException("Invalid username:password in Authorization header.");
@@ -78,14 +95,15 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     }
 
     @Override
+    /**
+     * some user agents might not work correctly if they see the , charset parameter after realm
+     */
     public void sendUnauthorized(final HttpServletResponse response) {
-        String challenge = "Basic realm=\"" + this.realm + "\", charset=\"UTF-8\"";
-        if ("".equals(charset)) {
-            // some user agents might not work correctly if they see the , charset parameter after realm
-            challenge = "Basic realm=\"" + this.realm + "\"";
+        String challenge = "Basic realm=\"" + this.realm + "\"";
+        if (includeAuthenticationCharset) {
+            challenge = challenge + ", charset=\"" + charset.name() + "\"";
         }
         response.addHeader("WWW-Authenticate", challenge);
-
     }
 
     /**
@@ -131,10 +149,13 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     }
 
     private void setCharset(String charset) {
-        this.charset = (charset == null) ? "" : charset.trim();
-    }
-
-    public String getCharset() {
-        return this.charset;
+        if ("".equals(charset)) {
+            this.includeAuthenticationCharset = false;
+        } else if (BasicSecurityFilterProvider.SupportedCharsets.containsKey(charset)) {
+            this.includeAuthenticationCharset = true;
+            this.charset = Charset.forName(charset);
+        } else {
+            throw new IllegalArgumentException("Unsupported charset. Use UTF-8 or US-ASCII");
+        }
     }
 }
