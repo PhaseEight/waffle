@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,18 +43,16 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     /** The realm. */
     private String realm = "BasicSecurityFilterProvider";
 
-    private boolean includeAuthenticationCharset = true;
-
     private Charset charset = StandardCharsets.UTF_8;
 
-    public static Map SupportedCharsets = new HashMap<String, Charset>() {
+    public static List<Charset> SupportedCharsets = new ArrayList<Charset>() {
 
         /** The Constant serialVersionUID. */
         private static final long serialVersionUID = 1L;
 
         {
-            this.put(StandardCharsets.UTF_8.name(), StandardCharsets.UTF_8);
-            this.put(StandardCharsets.US_ASCII.name(), StandardCharsets.US_ASCII);
+            this.add(StandardCharsets.UTF_8);
+            this.add(StandardCharsets.US_ASCII);
         }
 
     };
@@ -100,7 +100,7 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
      */
     public void sendUnauthorized(final HttpServletResponse response) {
         String challenge = "Basic realm=\"" + this.realm + "\"";
-        if (includeAuthenticationCharset) {
+        if (charset != null) {
             challenge = challenge + ", charset=\"" + charset.name() + "\"";
         }
         response.addHeader("WWW-Authenticate", challenge);
@@ -141,7 +141,12 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
                 this.setRealm(parameterValue);
                 break;
             case "charset":
-                this.setCharset(parameterValue);
+                if ("".equals(parameterValue)) {
+                    this.charset = null;
+                }
+                else{
+                    this.setCharset(parameterValue);
+                }
                 break;
             default:
                 throw new InvalidParameterException(parameterName);
@@ -149,12 +154,10 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     }
 
     private void setCharset(String charset) {
-        if ("".equals(charset)) {
-            this.includeAuthenticationCharset = false;
-        } else if (BasicSecurityFilterProvider.SupportedCharsets.containsKey(charset)) {
-            this.includeAuthenticationCharset = true;
+        if (BasicSecurityFilterProvider.SupportedCharsets.contains(Charset.forName(charset))) {
             this.charset = Charset.forName(charset);
         } else {
+            this.charset = null;
             throw new IllegalArgumentException("Unsupported charset. Use UTF-8 or US-ASCII");
         }
     }

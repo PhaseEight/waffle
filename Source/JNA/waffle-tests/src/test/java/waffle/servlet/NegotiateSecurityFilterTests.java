@@ -20,11 +20,22 @@ import com.sun.jna.platform.win32.Sspi;
 import com.sun.jna.platform.win32.Sspi.SecBufferDesc;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.Enumeration;
 
 import javax.security.auth.Subject;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.Verifications;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -37,6 +48,7 @@ import waffle.mock.http.SimpleFilterChain;
 import waffle.mock.http.SimpleFilterConfig;
 import waffle.mock.http.SimpleHttpRequest;
 import waffle.mock.http.SimpleHttpResponse;
+import waffle.util.CorsPreflightCheck;
 import waffle.windows.auth.IWindowsCredentialsHandle;
 import waffle.windows.auth.PrincipalFormat;
 import waffle.windows.auth.impl.WindowsAccountImpl;
@@ -411,4 +423,152 @@ public class NegotiateSecurityFilterTests {
             Assertions.assertEquals("java.lang.ClassNotFoundException: invalidClass", e.getMessage());
         }
     }
+
+    /**
+     * Test cors and bearer authorization I init.
+     *
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
+     */
+    @Test
+    void testCorsAndBearerAuthorizationI_init(@Mocked final FilterConfig filterConfig) throws Exception {
+
+        /** The init parameter names. */
+        final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+
+            /** The Constant serialVersionUID. */
+            private static final long serialVersionUID = 1L;
+
+            {
+                this.add("principalFormat");
+                this.add("principalFormat");
+                this.add("roleFormat");
+                this.add("allowGuestLogin");
+                this.add("impersonate");
+                this.add("securityFilterProviders");
+                this.add("excludePatterns");
+                this.add("excludeCorsPreflight");
+                this.add("excludeBearerAuthorization");
+            }
+        });
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = initParameterNames;
+                filterConfig.getInitParameter("principalFormat");
+                this.result = "fqn";
+                filterConfig.getInitParameter("roleFormat");
+                this.result = "fqn";
+                filterConfig.getInitParameter("allowGuestLogin");
+                this.result = "false";
+                filterConfig.getInitParameter("impersonate");
+                this.result = "true";
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.result = "waffle.servlet.spi.BasicSecurityFilterProvider\nwaffle.servlet.spi.NegotiateSecurityFilterProvider";
+                filterConfig.getInitParameter("excludePatterns");
+                this.result = ".*/peter/.*";
+                filterConfig.getInitParameter("excludeCorsPreflight");
+                this.result = "true";
+                filterConfig.getInitParameter("excludeBearerAuthorization");
+                this.result = "true";
+            }
+        };
+
+        this.filter.init(filterConfig);
+
+        final Field excludeCorsPreflight = this.filter.getClass().getDeclaredField("excludeCorsPreflight");
+        excludeCorsPreflight.setAccessible(true);
+        final Field excludeBearerAuthorization = this.filter.getClass().getDeclaredField("excludeBearerAuthorization");
+        excludeBearerAuthorization.setAccessible(true);
+        Assertions.assertTrue(excludeCorsPreflight.getBoolean(this.filter));
+        Assertions.assertTrue(excludeBearerAuthorization.getBoolean(this.filter));
+        Assertions.assertTrue(this.filter.isImpersonate());
+        Assertions.assertFalse(this.filter.isAllowGuestLogin());
+
+        new Verifications() {
+            {
+                filterConfig.getInitParameter(this.withInstanceOf(String.class));
+                this.minTimes = 8;
+            }
+        };
+
+    }
+
+    /**
+     * Test exclude cors and OAUTH bearer authorization do filter.
+     *
+     * @param request
+     *            the request
+     * @param response
+     *            the response
+     * @param chain
+     *            the chain
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
+     */
+    @Test
+    void testExcludeCorsAndOAUTHBearerAuthorization_doFilter(@Mocked final HttpServletRequest request,
+            @Mocked final HttpServletResponse response, @Mocked final FilterChain chain,
+            @Mocked final FilterConfig filterConfig) throws Exception {
+
+        /** The init parameter names. */
+        final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+
+            /** The Constant serialVersionUID. */
+            private static final long serialVersionUID = 1L;
+
+            {
+                this.add("principalFormat");
+                this.add("principalFormat");
+                this.add("roleFormat");
+                this.add("allowGuestLogin");
+                this.add("impersonate");
+                this.add("securityFilterProviders");
+                this.add("excludeCorsPreflight");
+                this.add("excludeBearerAuthorization");
+            }
+        });
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = initParameterNames;
+                filterConfig.getInitParameter(NegotiateSecurityFilter.InitParameter.PRINCIPAL_FORMAT.getParamName());
+                this.result = "fqn";
+                filterConfig.getInitParameter("roleFormat");
+                this.result = "fqn";
+                filterConfig.getInitParameter("allowGuestLogin");
+                this.result = "false";
+                filterConfig.getInitParameter("impersonate");
+                this.result = "false";
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.result = "waffle.servlet.spi.BasicSecurityFilterProvider\nwaffle.servlet.spi.NegotiateSecurityFilterProvider";
+                filterConfig.getInitParameter("excludeCorsPreflight");
+                this.result = "true";
+                filterConfig.getInitParameter("excludeBearerAuthorization");
+                this.result = "true";
+                CorsPreflightCheck.isPreflight(request);
+                this.result = true;
+                request.getHeader("Authorization");
+                this.result = "Bearer aBase64hash";
+            }
+        };
+
+        this.filter.init(filterConfig);
+        this.filter.doFilter(request, response, chain);
+
+        new Verifications() {
+            {
+                chain.doFilter(request, response);
+                this.times = 1;
+            }
+        };
+
+    }
+
 }
