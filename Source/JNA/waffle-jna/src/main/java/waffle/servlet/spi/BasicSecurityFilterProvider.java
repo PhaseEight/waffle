@@ -13,6 +13,7 @@ package waffle.servlet.spi;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
@@ -137,23 +138,28 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
                 this.setRealm(parameterValue);
                 break;
             case "charset":
-                if ("".equals(parameterValue)) {
-                    this.charset = null;
-                } else {
-                    this.setCharset(parameterValue);
-                }
+                this.setCharset(parameterValue);
                 break;
             default:
                 throw new InvalidParameterException(parameterName);
         }
     }
 
-    private void setCharset(String charset) {
-        if (BasicSecurityFilterProvider.SupportedCharsets.contains(Charset.forName(charset))) {
-            this.charset = Charset.forName(charset);
-        } else {
+    private void setCharset(String charsetName) throws UnsupportedCharsetException{
+        if ("".equals(charsetName)) {
             this.charset = null;
-            throw new IllegalArgumentException("Unsupported charset. Use UTF-8 or US-ASCII");
+            return;
         }
-    }
+        try {
+            Charset charset = Charset.forName(charsetName);
+            if (BasicSecurityFilterProvider.SupportedCharsets.contains(charset)) {
+                this.charset = charset;
+            } else {
+                throw new java.nio.charset.UnsupportedCharsetException("Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII");
+            }
+        }
+        catch(UnsupportedCharsetException uce) {
+            throw new java.nio.charset.UnsupportedCharsetException("Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII");
+        }
+}
 }

@@ -13,10 +13,12 @@ package waffle.servlet;
 
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
 import java.util.Enumeration;
 
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import mockit.Expectations;
@@ -56,7 +58,7 @@ class NegotiateSecurityFilterProviderTests {
      *             the exception
      */
     @Test
-    void testNegotiateSecurityFilterProviderWithNoCharset_init(@Mocked final FilterConfig filterConfig)
+    void testNegotiateSecurityFilterProviderWithEmptyCharset(@Mocked final FilterConfig filterConfig)
             throws Exception {
 
         final SimpleHttpResponse response = new SimpleHttpResponse();
@@ -115,7 +117,7 @@ class NegotiateSecurityFilterProviderTests {
      *             the exception
      */
     @Test
-    void testNegotiateSecurityFilterProviderWitUTF8Charset_init(@Mocked final FilterConfig filterConfig)
+    void testNegotiateSecurityFilterProviderWitUTF8Charset(@Mocked final FilterConfig filterConfig)
             throws Exception {
 
         final SimpleHttpResponse response = new SimpleHttpResponse();
@@ -174,7 +176,7 @@ class NegotiateSecurityFilterProviderTests {
      *             the exception
      */
     @Test
-    void testNegotiateSecurityFilterProviderWitUSASCIICharset_init(@Mocked final FilterConfig filterConfig)
+    void testNegotiateSecurityFilterProviderWitUSASCIICharset(@Mocked final FilterConfig filterConfig)
             throws Exception {
 
         Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
@@ -210,6 +212,95 @@ class NegotiateSecurityFilterProviderTests {
 
         new Verifications() {
             {
+                filterConfig.getInitParameterNames();this.times = 1;
+                filterConfig.getInitParameter(this.withInstanceOf(String.class));
+                this.minTimes = 2;
+            }
+        };
+
+    }
+
+    @Test
+    void testNegotiateSecurityFilterProviderWithInvalidCharset(@Mocked final FilterConfig filterConfig)
+            throws Exception {
+
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+
+        Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+
+            /** The Constant serialVersionUID. */
+            private static final long serialVersionUID = 1L;
+
+            {
+                this.add("securityFilterProviders");
+                this.add("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
+            }
+        });
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = initParameterNames;
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.result = "waffle.servlet.spi.BasicSecurityFilterProvider";
+                filterConfig.getInitParameter("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
+                this.result = "NO-SUCH-CHARSET";
+            }
+        };
+
+        Throwable thrown = Assertions.assertThrows(ServletException.class,() -> {
+            this.filter.init(filterConfig);
+        });
+
+        Assertions.assertEquals("java.nio.charset.UnsupportedCharsetException: Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII",thrown.getMessage());
+
+    new Verifications() {
+            {
+                filterConfig.getInitParameter(this.withInstanceOf(String.class));
+                this.minTimes = 2;
+            }
+        };
+
+    }
+
+
+    @Test
+    void testNegotiateSecurityFilterProviderWithUnsupportedCharset(@Mocked final FilterConfig filterConfig)
+            throws Exception {
+
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+
+        Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+
+            /** The Constant serialVersionUID. */
+            private static final long serialVersionUID = 1L;
+
+            {
+                this.add("securityFilterProviders");
+                this.add("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
+            }
+        });
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = initParameterNames;
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.result = "waffle.servlet.spi.BasicSecurityFilterProvider";
+                filterConfig.getInitParameter("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
+                this.result = StandardCharsets.UTF_16.name();
+            }
+        };
+
+        Throwable thrown = Assertions.assertThrows(ServletException.class,() -> {
+            this.filter.init(filterConfig);
+        });
+
+        Assertions.assertEquals("java.nio.charset.UnsupportedCharsetException: Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII",thrown.getMessage());
+
+        new Verifications() {
+            {
+                filterConfig.getInitParameterNames(); this.times = 1 ;
                 filterConfig.getInitParameter(this.withInstanceOf(String.class));
                 this.minTimes = 2;
             }
