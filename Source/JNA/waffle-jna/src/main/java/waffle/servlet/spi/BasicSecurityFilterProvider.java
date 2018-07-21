@@ -11,14 +11,11 @@
  */
 package waffle.servlet.spi;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -71,8 +68,7 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     }
 
     @Override
-    public IWindowsIdentity doFilter(final HttpServletRequest request, final HttpServletResponse response)
-            throws IOException {
+    public IWindowsIdentity doFilter(final HttpServletRequest request, final HttpServletResponse response) {
 
         final AuthorizationHeader authorizationHeader = new AuthorizationHeader(request);
         final String usernamePassword = new String(authorizationHeader.getTokenBytes(), charset);
@@ -143,8 +139,7 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
             case "charset":
                 if ("".equals(parameterValue)) {
                     this.charset = null;
-                }
-                else{
+                } else {
                     this.setCharset(parameterValue);
                 }
                 break;

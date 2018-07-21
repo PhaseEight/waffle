@@ -8,7 +8,7 @@
  * https://www.eclipse.org/legal/epl-v10.html.
  *
  * Contributors: Application Security, Inc.
- */
+*/
 package waffle.servlet;
 
 import java.lang.reflect.Field;
@@ -89,11 +89,13 @@ class NegotiateSecurityFilterProviderTests {
                 .getClass().getDeclaredField("charset");
         charset.setAccessible(true);
 
-        Assertions.assertNull(charset.get(this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName())));
+        Assertions.assertNull(
+                charset.get(this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName())));
 
-        BasicSecurityFilterProvider provider = (BasicSecurityFilterProvider)this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName());
+        BasicSecurityFilterProvider provider = (BasicSecurityFilterProvider) this.filter.getProviders()
+                .getByClassName(BasicSecurityFilterProvider.class.getName());
         provider.sendUnauthorized(response);
-        Assertions.assertEquals("Basic realm=\"BasicSecurityFilterProvider\"",response.getHeader("WWW-Authenticate"));
+        Assertions.assertEquals("Basic realm=\"BasicSecurityFilterProvider\"", response.getHeader("WWW-Authenticate"));
 
         new Verifications() {
             {
@@ -148,9 +150,11 @@ class NegotiateSecurityFilterProviderTests {
         Assertions.assertEquals(StandardCharsets.UTF_8,
                 charset.get(this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName())));
 
-        BasicSecurityFilterProvider provider = (BasicSecurityFilterProvider)this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName());
+        BasicSecurityFilterProvider provider = (BasicSecurityFilterProvider) this.filter.getProviders()
+                .getByClassName(BasicSecurityFilterProvider.class.getName());
         provider.sendUnauthorized(response);
-        Assertions.assertEquals("Basic realm=\"BasicSecurityFilterProvider\", charset=\"UTF-8\"",response.getHeader("WWW-Authenticate"));
+        Assertions.assertEquals("Basic realm=\"BasicSecurityFilterProvider\", charset=\"UTF-8\"",
+                response.getHeader("WWW-Authenticate"));
 
         new Verifications() {
             {
@@ -200,7 +204,6 @@ class NegotiateSecurityFilterProviderTests {
         final Field charset = (this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName()))
                 .getClass().getDeclaredField("charset");
         charset.setAccessible(true);
-
 
         Assertions.assertEquals(StandardCharsets.US_ASCII,
                 charset.get(this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName())));
