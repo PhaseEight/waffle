@@ -145,7 +145,7 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
         }
     }
 
-    private void setCharset(String charsetName) throws UnsupportedCharsetException{
+    private void setCharset(String charsetName) throws UnsupportedCharsetException {
         if ("".equals(charsetName)) {
             this.charset = null;
             return;
@@ -155,11 +155,12 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
             if (BasicSecurityFilterProvider.SupportedCharsets.contains(charset)) {
                 this.charset = charset;
             } else {
-                throw new java.nio.charset.UnsupportedCharsetException("Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII");
+                throw new java.nio.charset.UnsupportedCharsetException(
+                        "Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII");
             }
+        } catch (UnsupportedCharsetException uce) {
+            throw new java.nio.charset.UnsupportedCharsetException(
+                    "Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII");
         }
-        catch(UnsupportedCharsetException uce) {
-            throw new java.nio.charset.UnsupportedCharsetException("Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII");
-        }
-}
+    }
 }
