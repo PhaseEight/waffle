@@ -8,7 +8,7 @@
  * https://www.eclipse.org/legal/epl-v10.html.
  *
  * Contributors: Application Security, Inc.
-*/
+ */
 package waffle.servlet;
 
 import java.lang.reflect.Field;
@@ -58,8 +58,7 @@ class NegotiateSecurityFilterProviderTests {
      *             the exception
      */
     @Test
-    void testNegotiateSecurityFilterProviderWithEmptyCharset(@Mocked final FilterConfig filterConfig)
-            throws Exception {
+    void testNegotiateSecurityFilterProviderWithEmptyCharset(@Mocked final FilterConfig filterConfig) throws Exception {
 
         final SimpleHttpResponse response = new SimpleHttpResponse();
 
@@ -117,8 +116,7 @@ class NegotiateSecurityFilterProviderTests {
      *             the exception
      */
     @Test
-    void testNegotiateSecurityFilterProviderWitUTF8Charset(@Mocked final FilterConfig filterConfig)
-            throws Exception {
+    void testNegotiateSecurityFilterProviderWitUTF8Charset(@Mocked final FilterConfig filterConfig) throws Exception {
 
         final SimpleHttpResponse response = new SimpleHttpResponse();
 
@@ -212,13 +210,16 @@ class NegotiateSecurityFilterProviderTests {
 
         new Verifications() {
             {
-                filterConfig.getInitParameterNames();this.times = 1;
+                filterConfig.getInitParameterNames();
+                this.times = 1;
                 filterConfig.getInitParameter(this.withInstanceOf(String.class));
                 this.minTimes = 2;
             }
         };
 
     }
+
+
 
     @Test
     void testNegotiateSecurityFilterProviderWithInvalidCharset(@Mocked final FilterConfig filterConfig)
@@ -248,21 +249,26 @@ class NegotiateSecurityFilterProviderTests {
             }
         };
 
-        Throwable thrown = Assertions.assertThrows(ServletException.class,() -> {
+        Throwable thrown = Assertions.assertThrows(ServletException.class, () -> {
             this.filter.init(filterConfig);
         });
 
-        Assertions.assertEquals("java.nio.charset.UnsupportedCharsetException: Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII",thrown.getMessage());
+        Assertions.assertEquals(
+                "java.nio.charset.UnsupportedCharsetException: Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII",
+                thrown.getMessage());
 
-    new Verifications() {
+        new Verifications() {
             {
-                filterConfig.getInitParameter(this.withInstanceOf(String.class));
-                this.minTimes = 2;
+                filterConfig.getInitParameterNames();
+                this.times = 1;
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.minTimes = 1;
+                filterConfig.getInitParameter("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
+                this.times = 1;
             }
         };
 
     }
-
 
     @Test
     void testNegotiateSecurityFilterProviderWithUnsupportedCharset(@Mocked final FilterConfig filterConfig)
@@ -292,17 +298,22 @@ class NegotiateSecurityFilterProviderTests {
             }
         };
 
-        Throwable thrown = Assertions.assertThrows(ServletException.class,() -> {
+        Throwable thrown = Assertions.assertThrows(ServletException.class, () -> {
             this.filter.init(filterConfig);
         });
 
-        Assertions.assertEquals("java.nio.charset.UnsupportedCharsetException: Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII",thrown.getMessage());
+        Assertions.assertEquals(
+                "java.nio.charset.UnsupportedCharsetException: Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII",
+                thrown.getMessage());
 
         new Verifications() {
             {
-                filterConfig.getInitParameterNames(); this.times = 1 ;
-                filterConfig.getInitParameter(this.withInstanceOf(String.class));
-                this.minTimes = 2;
+                filterConfig.getInitParameterNames();
+                this.times = 1;
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.times = 1;
+                filterConfig.getInitParameter("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
+                this.times = 1;
             }
         };
 
