@@ -443,7 +443,6 @@ public class NegotiateSecurityFilterTests {
 
             {
                 this.add("principalFormat");
-                this.add("principalFormat");
                 this.add("roleFormat");
                 this.add("allowGuestLogin");
                 this.add("impersonate");
@@ -524,7 +523,6 @@ public class NegotiateSecurityFilterTests {
 
             {
                 this.add("principalFormat");
-                this.add("principalFormat");
                 this.add("roleFormat");
                 this.add("allowGuestLogin");
                 this.add("impersonate");
@@ -564,6 +562,67 @@ public class NegotiateSecurityFilterTests {
 
         new Verifications() {
             {
+                chain.doFilter(request, response);
+                this.times = 1;
+            }
+        };
+
+    }
+
+    /**
+     * Test exclude cors and OAUTH bearer authorization do filter.
+     *
+     * @param request
+     *            the request
+     * @param response
+     *            the response
+     * @param chain
+     *            the chain
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
+     */
+    @Test
+    void testNotEnabledFilter(@Mocked final HttpServletRequest request, @Mocked final HttpServletResponse response,
+            @Mocked final FilterChain chain, @Mocked final FilterConfig filterConfig) throws Exception {
+
+        /** The init parameter names. */
+        final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+
+            /** The Constant serialVersionUID. */
+            private static final long serialVersionUID = 1L;
+
+            {
+                this.add("enabled");
+                this.add("principalFormat");
+                this.add("roleFormat");
+                this.add("allowGuestLogin");
+                this.add("impersonate");
+                this.add("securityFilterProviders");
+                this.add("excludeCorsPreflight");
+                this.add("excludeBearerAuthorization");
+            }
+        });
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = initParameterNames;
+                filterConfig.getInitParameter(NegotiateSecurityFilter.InitParameter.ENABLED.getParamName());
+                this.result = "false";
+            }
+        };
+
+        this.filter.init(filterConfig);
+        this.filter.doFilter(request, response, chain);
+
+        new Verifications() {
+            {
+                filterConfig.getInitParameterNames();
+                this.times = 1;
+                filterConfig.getInitParameter(this.withInstanceOf(String.class));
+                this.minTimes = 1;
                 chain.doFilter(request, response);
                 this.times = 1;
             }

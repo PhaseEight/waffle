@@ -219,8 +219,6 @@ class NegotiateSecurityFilterProviderTests {
 
     }
 
-
-
     @Test
     void testNegotiateSecurityFilterProviderWithInvalidCharset(@Mocked final FilterConfig filterConfig)
             throws Exception {

@@ -103,7 +103,7 @@ public class BasicSecurityFilterTests {
         final SimpleHttpResponse response = new SimpleHttpResponse();
         final FilterChain filterChain = new SimpleFilterChain();
         this.filter.doFilter(request, response, filterChain);
-        Assertions.assertEquals(403, response.getStatus());
+        Assertions.assertEquals(401, response.getStatus());
     }
 
 }

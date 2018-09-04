@@ -218,6 +218,7 @@ public class WaffleAutoConfiguration {
         bean.setImpersonate(this.properties.getSso().isImpersonate());
         bean.setDefaultGrantedAuthority(defaultGrantedAuthority);
         bean.setGrantedAuthorityFactory(grantedAuthorityFactory);
+        bean.setEnabled(this.properties.isEnabled());
         return bean;
     }
 

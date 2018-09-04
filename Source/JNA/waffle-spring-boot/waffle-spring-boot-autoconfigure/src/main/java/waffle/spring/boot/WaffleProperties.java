@@ -16,6 +16,8 @@ import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import waffle.windows.auth.PrincipalFormat;
+
 /**
  * The configuration properties that can be used with Spring Boot to configure WAFFLE.
  */
@@ -33,6 +35,9 @@ public class WaffleProperties {
 
     /** Configuration properties for single-sign-on. */
     private SingleSignOnProperties sso;
+
+    /** The filter is enabled. */
+    private boolean isEnabled = true;
 
     /**
      * Gets the principal format.
@@ -89,6 +94,25 @@ public class WaffleProperties {
      */
     public void setAllowGuestLogin(final boolean allowGuestLogin) {
         this.allowGuestLogin = allowGuestLogin;
+    }
+
+    /**
+     * Gets whether the filter is enabled.
+     *
+     * @return whether the filter is enabled or not
+     */
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+
+    /**
+     * Sets whether the filter is enabled.
+     *
+     * @param enabled
+     *            the new provider
+     */
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
     }
 
     /**

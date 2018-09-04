@@ -100,7 +100,7 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
         if (charset != null) {
             challenge = challenge + ", charset=\"" + charset.name() + "\"";
         }
-        response.addHeader("WWW-Authenticate", challenge);
+        response.addHeader(SecurityFilterProvider.WWW_AUTHENTICATE, challenge);
     }
 
     /**
