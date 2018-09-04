@@ -15,7 +15,6 @@ import com.sun.jna.Platform;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.security.InvalidParameterException;
 import java.security.Principal;
 import java.util.*;
 import java.util.Map.Entry;
@@ -61,7 +60,7 @@ public class NegotiateSecurityFilter implements Filter {
 
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(NegotiateSecurityFilter.class);
-    private static final Logger SECURITY_LOGGER = LoggerFactory
+    private static final Logger AUTHENTICATION_LOGGER = LoggerFactory
             .getLogger(NegotiateSecurityFilter.class + ".authentication");
 
     /** The Constant PRINCIPALSESSIONKEY. */
@@ -178,7 +177,7 @@ public class NegotiateSecurityFilter implements Filter {
                 // standard behaviour for NTLM and Negotiate if the Providers have set WWW-Authenticate
                 if (windowsIdentity == null) {
                     if (authorizationHeader.isLogonAttempt()) {
-                        NegotiateSecurityFilter.SECURITY_LOGGER.warn("Basic Authorization failed; send Forbidden");
+                        NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("Basic Authorization failed; send Forbidden");
                         if (failedLogonResponse == HttpServletResponse.SC_FORBIDDEN) {
                             this.sendForbidden(response);
                         } else {
@@ -189,7 +188,7 @@ public class NegotiateSecurityFilter implements Filter {
                     return;
                 }
             } catch (final IOException e) {
-                NegotiateSecurityFilter.SECURITY_LOGGER.warn("error logging in user using Auth Scheme [{}]: {}",
+                NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("error logging in user using Auth Scheme [{}]: {}",
                         authorizationHeader.getSecurityPackage(), e.getMessage());
                 if (authorizationHeader.isLogonAttempt()
                         && failedLogonResponse.intValue() == HttpServletResponse.SC_FORBIDDEN) {
@@ -204,7 +203,7 @@ public class NegotiateSecurityFilter implements Filter {
             IWindowsImpersonationContext ctx = null;
             try {
                 if (!this.allowGuestLogin && windowsIdentity.isGuest()) {
-                    NegotiateSecurityFilter.SECURITY_LOGGER.warn("guest login disabled: {}", windowsIdentity.getFqn());
+                    NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("guest login disabled: {}", windowsIdentity.getFqn());
                     if (authorizationHeader.isLogonAttempt()
                             && failedLogonResponse == HttpServletResponse.SC_FORBIDDEN) {
                         this.sendForbidden(response);
@@ -212,7 +211,7 @@ public class NegotiateSecurityFilter implements Filter {
                     return;
                 }
 
-                NegotiateSecurityFilter.SECURITY_LOGGER.debug("logged in user: {} ({})", windowsIdentity.getFqn(),
+                NegotiateSecurityFilter.AUTHENTICATION_LOGGER.debug("logged in user: {} ({})", windowsIdentity.getFqn(),
                         windowsIdentity.getSidString());
 
                 final HttpSession session = request.getSession(true);
@@ -237,7 +236,7 @@ public class NegotiateSecurityFilter implements Filter {
                 subject.getPrincipals().add(windowsPrincipal);
                 request.getSession(false).setAttribute("javax.security.auth.subject", subject);
 
-                NegotiateSecurityFilter.SECURITY_LOGGER.info("successfully logged in user: {}",
+                NegotiateSecurityFilter.AUTHENTICATION_LOGGER.info("successfully logged in user: {}",
                         windowsIdentity.getFqn());
 
                 request.getSession(false).setAttribute(NegotiateSecurityFilter.PRINCIPALSESSIONKEY, windowsPrincipal);
