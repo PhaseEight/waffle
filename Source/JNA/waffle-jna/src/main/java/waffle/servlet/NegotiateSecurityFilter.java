@@ -96,7 +96,7 @@ public class NegotiateSecurityFilter implements Filter {
     /** The enable filter flag. */
     private boolean enabled = true;
 
-    private Integer failedLogonResponse = HttpServletResponse.SC_UNAUTHORIZED;
+    private int logonErrorResponseCode = HttpServletResponse.SC_UNAUTHORIZED;
 
     /**
      * Instantiates a new negotiate security filter.
@@ -178,7 +178,7 @@ public class NegotiateSecurityFilter implements Filter {
                 if (windowsIdentity == null) {
                     if (authorizationHeader.isLogonAttempt()) {
                         NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("Basic Authorization failed; send Forbidden");
-                        if (failedLogonResponse == HttpServletResponse.SC_FORBIDDEN) {
+                        if (this.logonErrorResponseCode == HttpServletResponse.SC_FORBIDDEN) {
                             this.sendForbidden(response);
                         } else {
                             this.sendUnauthorized(response, true);
@@ -191,7 +191,7 @@ public class NegotiateSecurityFilter implements Filter {
                 NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("error logging in user using Auth Scheme [{}]: {}",
                         authorizationHeader.getSecurityPackage(), e.getMessage());
                 if (authorizationHeader.isLogonAttempt()
-                        && failedLogonResponse.intValue() == HttpServletResponse.SC_FORBIDDEN) {
+                        && this.logonErrorResponseCode == HttpServletResponse.SC_FORBIDDEN) {
                     this.sendForbidden(response);
                 } else {
                     this.sendUnauthorized(response, true);
@@ -205,7 +205,7 @@ public class NegotiateSecurityFilter implements Filter {
                 if (!this.allowGuestLogin && windowsIdentity.isGuest()) {
                     NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("guest login disabled: {}", windowsIdentity.getFqn());
                     if (authorizationHeader.isLogonAttempt()
-                            && failedLogonResponse == HttpServletResponse.SC_FORBIDDEN) {
+                            && this.logonErrorResponseCode == HttpServletResponse.SC_FORBIDDEN) {
                         this.sendForbidden(response);
                     }
                     return;
@@ -355,7 +355,7 @@ public class NegotiateSecurityFilter implements Filter {
                 } else {
                     switch (initParam) {
                         case LOGON_ERROR_RESPONSE_CODE:
-                            this.failedLogonResponse = Integer.valueOf(parameterValue);
+                            this.failedLogonResponse = Integer.parseInt(parameterValue);
                             return;
                         case ENABLED:
                             this.enabled = Boolean.parseBoolean(parameterValue);
@@ -620,16 +620,16 @@ public class NegotiateSecurityFilter implements Filter {
      *
      * @return true if Bearer Authorization is ignored, false otherwise
      */
-    public int getFailedLogonResponse() {
-        return this.failedLogonResponse;
+    public int getLogonErrorResponseCode() {
+        return this.logonErrorResponseCode;
     }
 
-    public void setFailedLogonResponse(int failedLogonErrorCode) {
-        this.failedLogonResponse = failedLogonErrorCode;
+    public void setLogonErrorResponseCode(int logonErrorResponseCode) {
+        this.logonErrorResponseCode = logonErrorResponseCode;
     }
 
     public enum InitParameter {
-        LOGON_ERROR_RESPONSE_CODE("failedLogonErrorCode"),
+        LOGON_ERROR_RESPONSE_CODE("logonErrorResponseCode"),
         ENABLED("enabled"),
         PRINCIPAL_FORMAT("principalFormat"),
         ROLE_FORMAT("roleFormat"),
@@ -673,16 +673,4 @@ public class NegotiateSecurityFilter implements Filter {
             return parameter;
         }
     }
-
-    public static List<Integer> SupportedFailedLogonResponses = new ArrayList<Integer>() {
-
-        /** The Constant serialVersionUID. */
-        private static final long serialVersionUID = 1L;
-
-        {
-            this.add(HttpServletResponse.SC_FORBIDDEN);
-            this.add(HttpServletResponse.SC_UNAUTHORIZED);
-        }
-
-    };
 }
