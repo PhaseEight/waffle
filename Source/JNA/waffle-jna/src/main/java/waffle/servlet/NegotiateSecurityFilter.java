@@ -355,7 +355,7 @@ public class NegotiateSecurityFilter implements Filter {
                 } else {
                     switch (initParam) {
                         case LOGON_ERROR_RESPONSE_CODE:
-                            this.failedLogonResponse = Integer.parseInt(parameterValue);
+                            this.setLogonErrorResponseCode(Integer.parseInt(parameterValue));
                             return;
                         case ENABLED:
                             this.enabled = Boolean.parseBoolean(parameterValue);
