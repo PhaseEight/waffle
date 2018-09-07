@@ -37,7 +37,7 @@ public class WaffleProperties {
     private SingleSignOnProperties sso;
 
     /** The filter is enabled. */
-    private boolean isEnabled = true;
+    private boolean enabled = true;
 
     /**
      * Gets the principal format.
@@ -102,7 +102,7 @@ public class WaffleProperties {
      * @return whether the filter is enabled or not
      */
     public boolean isEnabled() {
-        return isEnabled;
+        return this.enabled;
     }
 
     /**
@@ -112,7 +112,7 @@ public class WaffleProperties {
      *            the new provider
      */
     public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     /**

@@ -67,7 +67,7 @@ public class NegotiateSecurityFilter extends GenericFilterBean {
     /** The default granted authority. */
     private GrantedAuthority defaultGrantedAuthority = WindowsAuthenticationToken.DEFAULT_GRANTED_AUTHORITY;
 
-    /** The filter is enabled. */
+    /** The enable filter flag. This will not not do any Windows Authentication */
     private boolean enabled = true;
 
     /**

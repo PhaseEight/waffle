@@ -93,7 +93,7 @@ public class NegotiateSecurityFilter implements Filter {
     /** The exclusions for cors pre flight flag. */
     private boolean excludeCorsPreflight;
 
-    /** The enable filter flag. */
+    /** The enable filter flag. This will not not do any Windows Authentication */
     private boolean enabled = true;
 
     private int logonErrorResponseCode = HttpServletResponse.SC_UNAUTHORIZED;
@@ -177,13 +177,13 @@ public class NegotiateSecurityFilter implements Filter {
                 // standard behaviour for NTLM and Negotiate if the Providers have set WWW-Authenticate
                 if (windowsIdentity == null) {
                     if (authorizationHeader.isLogonAttempt()) {
-                        NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("Basic Authorization failed; send Forbidden");
-                        if (this.logonErrorResponseCode == HttpServletResponse.SC_FORBIDDEN) {
+                        NegotiateSecurityFilter.AUTHENTICATION_LOGGER
+                                .warn("Basic Authorization failed; send Forbidden");
+                        if (this.getLogonErrorResponseCode() == HttpServletResponse.SC_FORBIDDEN) {
                             this.sendForbidden(response);
                         } else {
                             this.sendUnauthorized(response, true);
                         }
-
                     }
                     return;
                 }
@@ -191,7 +191,7 @@ public class NegotiateSecurityFilter implements Filter {
                 NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("error logging in user using Auth Scheme [{}]: {}",
                         authorizationHeader.getSecurityPackage(), e.getMessage());
                 if (authorizationHeader.isLogonAttempt()
-                        && this.logonErrorResponseCode == HttpServletResponse.SC_FORBIDDEN) {
+                        && this.getLogonErrorResponseCode() == HttpServletResponse.SC_FORBIDDEN) {
                     this.sendForbidden(response);
                 } else {
                     this.sendUnauthorized(response, true);
@@ -203,9 +203,10 @@ public class NegotiateSecurityFilter implements Filter {
             IWindowsImpersonationContext ctx = null;
             try {
                 if (!this.allowGuestLogin && windowsIdentity.isGuest()) {
-                    NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("guest login disabled: {}", windowsIdentity.getFqn());
+                    NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("guest login disabled: {}",
+                            windowsIdentity.getFqn());
                     if (authorizationHeader.isLogonAttempt()
-                            && this.logonErrorResponseCode == HttpServletResponse.SC_FORBIDDEN) {
+                            && this.getLogonErrorResponseCode() == HttpServletResponse.SC_FORBIDDEN) {
                         this.sendForbidden(response);
                     }
                     return;
