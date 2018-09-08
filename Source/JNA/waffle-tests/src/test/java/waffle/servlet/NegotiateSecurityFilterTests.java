@@ -12,6 +12,7 @@
 package waffle.servlet;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static waffle.servlet.NegotiateSecurityFilter.InitParameter.*;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.Secur32.EXTENDED_NAME_FORMAT;
@@ -344,6 +345,32 @@ public class NegotiateSecurityFilterTests {
     }
 
     /**
+     * Test init basic security filter provider.
+     *
+     * @throws ServletException
+     *             the servlet exception
+     */
+    @Test
+    public void testInitBasicSecurityFilterProvider403LogonErrorResponseCode() throws ServletException {
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        filterConfig.setParameter("principalFormat", "sid");
+        filterConfig.setParameter("roleFormat", "none");
+        filterConfig.setParameter("allowGuestLogin", "true");
+        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider\n");
+        filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
+        filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
+        filterConfig.setParameter(LOGON_ERROR_RESPONSE_CODE.getParamName(),"403");
+        this.filter.init(filterConfig);
+        Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
+        Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
+        Assertions.assertTrue(this.filter.isAllowGuestLogin());
+        Assertions.assertEquals(1, this.filter.getProviders().size());
+        Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
+        Assertions.assertEquals(this.filter.getLogonErrorResponseCode(), 403);
+    }
+
+
+    /**
      * Test init two security filter providers.
      *
      * @throws ServletException
@@ -536,7 +563,7 @@ public class NegotiateSecurityFilterTests {
             {
                 filterConfig.getInitParameterNames();
                 this.result = initParameterNames;
-                filterConfig.getInitParameter(NegotiateSecurityFilter.InitParameter.PRINCIPAL_FORMAT.getParamName());
+                filterConfig.getInitParameter(PRINCIPAL_FORMAT.getParamName());
                 this.result = "fqn";
                 filterConfig.getInitParameter("roleFormat");
                 this.result = "fqn";
@@ -609,7 +636,7 @@ public class NegotiateSecurityFilterTests {
             {
                 filterConfig.getInitParameterNames();
                 this.result = initParameterNames;
-                filterConfig.getInitParameter(NegotiateSecurityFilter.InitParameter.ENABLED.getParamName());
+                filterConfig.getInitParameter(ENABLED.getParamName());
                 this.result = "false";
             }
         };

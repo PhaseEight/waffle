@@ -88,7 +88,7 @@ public class NegotiateSecurityFilterProvider implements SecurityFilterProvider {
     @Override
     public void sendUnauthorized(final HttpServletResponse response) {
         for (final String protocol : this.protocols) {
-            response.addHeader(NegotiateSecurityFilterProvider.WWW_AUTHENTICATE, protocol);
+            response.addHeader(SecurityFilterProvider.WWW_AUTHENTICATE, protocol);
         }
     }
 

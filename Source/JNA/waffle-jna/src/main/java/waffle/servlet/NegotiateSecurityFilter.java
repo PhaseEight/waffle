@@ -357,10 +357,10 @@ public class NegotiateSecurityFilter implements Filter {
                     switch (initParam) {
                         case LOGON_ERROR_RESPONSE_CODE:
                             this.setLogonErrorResponseCode(Integer.parseInt(parameterValue));
-                            return;
+                            break;
                         case ENABLED:
                             this.enabled = Boolean.parseBoolean(parameterValue);
-                            return;
+                            break;
                         case PRINCIPAL_FORMAT:
                             this.principalFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
                             break;
