@@ -359,7 +359,7 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider\n");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
-        filterConfig.setParameter(LOGON_ERROR_RESPONSE_CODE.getParamName(),"403");
+        filterConfig.setParameter(LOGON_ERROR_RESPONSE_CODE.getParamName(), "403");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
@@ -368,7 +368,6 @@ public class NegotiateSecurityFilterTests {
         Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
         Assertions.assertEquals(this.filter.getLogonErrorResponseCode(), 403);
     }
-
 
     /**
      * Test init two security filter providers.
@@ -622,13 +621,6 @@ public class NegotiateSecurityFilterTests {
 
             {
                 this.add("enabled");
-                this.add("principalFormat");
-                this.add("roleFormat");
-                this.add("allowGuestLogin");
-                this.add("impersonate");
-                this.add("securityFilterProviders");
-                this.add("excludeCorsPreflight");
-                this.add("excludeBearerAuthorization");
             }
         });
 
