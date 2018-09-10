@@ -49,6 +49,8 @@ import waffle.mock.http.SimpleFilterChain;
 import waffle.mock.http.SimpleFilterConfig;
 import waffle.mock.http.SimpleHttpRequest;
 import waffle.mock.http.SimpleHttpResponse;
+import waffle.servlet.spi.SecurityFilterProvider;
+import waffle.servlet.spi.SecurityFilterProviderCollection;
 import waffle.util.CorsPreflightCheck;
 import waffle.windows.auth.IWindowsCredentialsHandle;
 import waffle.windows.auth.PrincipalFormat;
@@ -386,6 +388,50 @@ public class NegotiateSecurityFilterTests {
     }
 
     /**
+     * Test init two security filter providers.
+     *
+     * @throws ServletException
+     *             the servlet exception
+     */
+    @Test
+    public void testUseNegotiateSecurityFilterProviderFirst() throws ServletException, IOException {
+
+        final SimpleHttpRequest request = new SimpleHttpRequest();
+        request.setMethod("GET");
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+        // make sure that providers can be specified separated by any kind of space
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        filterConfig.setParameter("securityFilterProviders",
+                "waffle.servlet.spi.NegotiateSecurityFilterProvider waffle.servlet.spi.BasicSecurityFilterProvider");
+        this.filter.init(filterConfig);
+        final SimpleFilterChain filterChain = new SimpleFilterChain();
+        this.filter.doFilter(request, response, filterChain);
+
+        SecurityFilterProvider provider = this.filter.getProviders().get(0);
+
+        Assertions.assertEquals(provider.getClass().getName(), "waffle.servlet.spi.NegotiateSecurityFilterProvider");
+    }
+
+    @Test
+    public void testUseBasicSecurityFilterProviderFirst() throws ServletException, IOException {
+
+        final SimpleHttpRequest request = new SimpleHttpRequest();
+        request.setMethod("GET");
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+        // make sure that providers can be specified separated by any kind of space
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        filterConfig.setParameter("securityFilterProviders",
+                "waffle.servlet.spi.BasicSecurityFilterProvider waffle.servlet.spi.NegotiateSecurityFilterProvider");
+        this.filter.init(filterConfig);
+        final SimpleFilterChain filterChain = new SimpleFilterChain();
+        this.filter.doFilter(request, response, filterChain);
+
+        SecurityFilterProvider provider = this.filter.getProviders().get(0);
+
+        Assertions.assertEquals(provider.getClass().getName(), "waffle.servlet.spi.BasicSecurityFilterProvider");
+    }
+
+    /**
      * Test init negotiate security filter provider.
      *
      * @throws ServletException
@@ -571,7 +617,7 @@ public class NegotiateSecurityFilterTests {
                 filterConfig.getInitParameter("impersonate");
                 this.result = "false";
                 filterConfig.getInitParameter("securityFilterProviders");
-                this.result = "waffle.servlet.spi.BasicSecurityFilterProvider\nwaffle.servlet.spi.NegotiateSecurityFilterProvider";
+                this.result = "waffle.servlet.spi.NegotiateSecurityFilterProvider\nwaffle.servlet.spi.BasicSecurityFilterProvider";
                 filterConfig.getInitParameter("excludeCorsPreflight");
                 this.result = "true";
                 filterConfig.getInitParameter("excludeBearerAuthorization");
