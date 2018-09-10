@@ -22,10 +22,7 @@ import com.sun.jna.platform.win32.Sspi.SecBufferDesc;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Enumeration;
+import java.util.*;
 
 import javax.security.auth.Subject;
 import javax.servlet.FilterChain;
@@ -406,9 +403,7 @@ public class NegotiateSecurityFilterTests {
         this.filter.init(filterConfig);
         final SimpleFilterChain filterChain = new SimpleFilterChain();
         this.filter.doFilter(request, response, filterChain);
-
         SecurityFilterProvider provider = this.filter.getProviders().get(0);
-
         Assertions.assertEquals(provider.getClass().getName(), "waffle.servlet.spi.NegotiateSecurityFilterProvider");
     }
 
@@ -425,9 +420,7 @@ public class NegotiateSecurityFilterTests {
         this.filter.init(filterConfig);
         final SimpleFilterChain filterChain = new SimpleFilterChain();
         this.filter.doFilter(request, response, filterChain);
-
         SecurityFilterProvider provider = this.filter.getProviders().get(0);
-
         Assertions.assertEquals(provider.getClass().getName(), "waffle.servlet.spi.BasicSecurityFilterProvider");
     }
 
