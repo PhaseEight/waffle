@@ -61,7 +61,7 @@ public class NegotiateSecurityFilter implements Filter {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(NegotiateSecurityFilter.class);
     private static final Logger AUTHENTICATION_LOGGER = LoggerFactory
-            .getLogger(NegotiateSecurityFilter.class + ".authentication");
+            .getLogger(NegotiateSecurityFilter.class.getCanonicalName() + ".authentication");
 
     /** The Constant PRINCIPALSESSIONKEY. */
     private static final String PRINCIPALSESSIONKEY = NegotiateSecurityFilter.class.getName() + ".PRINCIPAL";
