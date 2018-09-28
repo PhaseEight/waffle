@@ -589,20 +589,19 @@ public class NegotiateSecurityFilter implements Filter {
             this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
         } else if ("FORBIDDEN".equalsIgnoreCase(accessDeniedStrategy)) {
             this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
-        }
-        else {
+        } else {
             throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedStrategy));
         }
 
     }
+
     public void setAccessDeniedStrategy(int accessDeniedStrategy) throws ServletException {
 
-        if (accessDeniedStrategy == 401 ) {
+        if (accessDeniedStrategy == 401) {
             this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
-        } else if (accessDeniedStrategy == 403 ) {
+        } else if (accessDeniedStrategy == 403) {
             this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
-        }
-        else {
+        } else {
             throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedStrategy));
         }
 
@@ -652,7 +651,7 @@ public class NegotiateSecurityFilter implements Filter {
             if (parameter == null && paramName.indexOf("/") > 0) {
                 parameter = PROVIDER_PARAMETER;
             }
-            if(parameter == null){
+            if (parameter == null) {
                 parameter = UNSUPPORTED;
             }
             return parameter;
