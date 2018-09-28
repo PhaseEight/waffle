@@ -46,8 +46,9 @@ import waffle.mock.http.SimpleFilterChain;
 import waffle.mock.http.SimpleFilterConfig;
 import waffle.mock.http.SimpleHttpRequest;
 import waffle.mock.http.SimpleHttpResponse;
+import waffle.servlet.spi.ForbiddenAccessDeniedStrategy;
 import waffle.servlet.spi.SecurityFilterProvider;
-import waffle.servlet.spi.SecurityFilterProviderCollection;
+import waffle.servlet.spi.UnauthorizedAccessDeniedStrategy;
 import waffle.util.CorsPreflightCheck;
 import waffle.windows.auth.IWindowsCredentialsHandle;
 import waffle.windows.auth.PrincipalFormat;
@@ -350,7 +351,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testInitBasicSecurityFilterProvider403LogonErrorResponseCode() throws ServletException {
+    public void testInitBasicSecurityFilterProviderWithForbiddenAccessDeniedStrategy() throws ServletException {
         final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
         filterConfig.setParameter("principalFormat", "sid");
         filterConfig.setParameter("roleFormat", "none");
@@ -358,14 +359,33 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider\n");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
-        filterConfig.setParameter(LOGON_ERROR_RESPONSE_CODE.getParamName(), "403");
+        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "FORBIDDEN");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
         Assertions.assertTrue(this.filter.isAllowGuestLogin());
         Assertions.assertEquals(1, this.filter.getProviders().size());
         Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
-        Assertions.assertEquals(this.filter.getLogonErrorResponseCode(), 403);
+        Assertions.assertTrue(this.filter.getAccessDeniedStrategy() instanceof ForbiddenAccessDeniedStrategy);
+    }
+
+    @Test
+    public void testInitBasicSecurityFilterProviderWithUnauthorizedAccessDeniedStrategy() throws ServletException {
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        filterConfig.setParameter("principalFormat", "sid");
+        filterConfig.setParameter("roleFormat", "none");
+        filterConfig.setParameter("allowGuestLogin", "true");
+        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider\n");
+        filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
+        filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
+        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "UNAUTHORIZED");
+        this.filter.init(filterConfig);
+        Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
+        Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
+        Assertions.assertTrue(this.filter.isAllowGuestLogin());
+        Assertions.assertEquals(1, this.filter.getProviders().size());
+        Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
+        Assertions.assertTrue(this.filter.getAccessDeniedStrategy() instanceof UnauthorizedAccessDeniedStrategy);
     }
 
     /**

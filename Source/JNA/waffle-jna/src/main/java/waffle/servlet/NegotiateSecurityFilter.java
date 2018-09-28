@@ -16,16 +16,14 @@ import com.sun.jna.Platform;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.security.auth.Subject;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -33,8 +31,7 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import waffle.servlet.spi.SecurityFilterProvider;
-import waffle.servlet.spi.SecurityFilterProviderCollection;
+import waffle.servlet.spi.*;
 import waffle.util.AuthorizationHeader;
 import waffle.util.CorsPreflightCheck;
 import waffle.windows.auth.IWindowsAuthProvider;
@@ -96,7 +93,7 @@ public class NegotiateSecurityFilter implements Filter {
     /** The enable filter flag. This will not not do any Windows Authentication */
     private boolean enabled = true;
 
-    private int logonErrorResponseCode = HttpServletResponse.SC_UNAUTHORIZED;
+    private AccessDeniedStrategy accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
 
     /**
      * Instantiates a new negotiate security filter.
@@ -176,26 +173,13 @@ public class NegotiateSecurityFilter implements Filter {
                 windowsIdentity = this.providers.doFilter(request, response);
                 // standard behaviour for NTLM and Negotiate if the Providers have set WWW-Authenticate
                 if (windowsIdentity == null) {
-                    if (authorizationHeader.isLogonAttempt()) {
-                        NegotiateSecurityFilter.AUTHENTICATION_LOGGER
-                                .warn("Basic Authorization failed; send Forbidden");
-                        if (this.getLogonErrorResponseCode() == HttpServletResponse.SC_FORBIDDEN) {
-                            this.sendForbidden(response);
-                        } else {
-                            this.sendUnauthorized(response, true);
-                        }
-                    }
+                    this.accessDenied(authorizationHeader, providers, response);
                     return;
                 }
             } catch (final IOException e) {
                 NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("error logging in user using Auth Scheme [{}]: {}",
                         authorizationHeader.getSecurityPackage(), e.getMessage());
-                if (authorizationHeader.isLogonAttempt()
-                        && this.getLogonErrorResponseCode() == HttpServletResponse.SC_FORBIDDEN) {
-                    this.sendForbidden(response);
-                } else {
-                    this.sendUnauthorized(response, true);
-                }
+                this.accessDenied(authorizationHeader, providers, response);
                 NegotiateSecurityFilter.LOGGER.trace("", e);
                 return;
             }
@@ -205,10 +189,7 @@ public class NegotiateSecurityFilter implements Filter {
                 if (!this.allowGuestLogin && windowsIdentity.isGuest()) {
                     NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("guest login disabled: {}",
                             windowsIdentity.getFqn());
-                    if (authorizationHeader.isLogonAttempt()
-                            && this.getLogonErrorResponseCode() == HttpServletResponse.SC_FORBIDDEN) {
-                        this.sendForbidden(response);
-                    }
+                    this.accessDenied(authorizationHeader, providers, response);
                     return;
                 }
 
@@ -263,7 +244,7 @@ public class NegotiateSecurityFilter implements Filter {
         }
 
         NegotiateSecurityFilter.LOGGER.debug("authorization required");
-        this.sendUnauthorized(response, false);
+        this.accessDenied(authorizationHeader, providers, response);
     }
 
     /**
@@ -355,8 +336,8 @@ public class NegotiateSecurityFilter implements Filter {
                     throw new ServletException(String.format("Invalid parameter: %s", parameterName));
                 } else {
                     switch (initParam) {
-                        case LOGON_ERROR_RESPONSE_CODE:
-                            this.setLogonErrorResponseCode(Integer.parseInt(parameterValue));
+                        case ACCESS_DENIED_STRATEGY:
+                            this.setAccessDeniedStrategy(parameterValue);
                             break;
                         case ENABLED:
                             this.enabled = Boolean.parseBoolean(parameterValue);
@@ -496,39 +477,15 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     /**
-     * Send a 401 Unauthorized along with protocol authentication headers.
-     *
-     * @param response
-     *            HTTP Response
-     * @param close
-     *            Close connection.
-     */
-    private void sendUnauthorized(final HttpServletResponse response, final boolean close) {
-        try {
-            this.providers.sendUnauthorized(response);
-            if (close) {
-                response.setHeader("Connection", "close");
-            } else {
-                response.setHeader("Connection", "keep-alive");
-            }
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            response.flushBuffer();
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Send a 403 Forbidden for a failed Authentication Attempt.
-     *
+     * When a login attempt has failed, the accessDeniedStrategy is called
+     * 
      * @param response
      *            HTTP Response
      */
-    private void sendForbidden(final HttpServletResponse response) {
+    private void accessDenied(final AuthorizationHeader authorizationHeader,
+            final SecurityFilterProviderCollection providers, final HttpServletResponse response) {
         try {
-            response.setHeader("Connection", "close");
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            response.flushBuffer();
+            accessDeniedStrategy.handle(authorizationHeader, providers, response);
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -617,20 +574,27 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     /**
-     * The HTTP Response Code to be Returned on Access Denied
+     * Returns the Access Denied Strategy Object
      *
-     * @return true if Bearer Authorization is ignored, false otherwise
+     * @return accessDeniedStrategy
      */
-    public int getLogonErrorResponseCode() {
-        return this.logonErrorResponseCode;
+    public AccessDeniedStrategy getAccessDeniedStrategy() {
+        return this.accessDeniedStrategy;
     }
 
-    public void setLogonErrorResponseCode(int logonErrorResponseCode) {
-        this.logonErrorResponseCode = logonErrorResponseCode;
+    public void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException{
+
+        if("UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
+            this.accessDeniedStrategy = (AccessDeniedStrategy) new UnauthorizedAccessDeniedStrategy();
+        }
+        else{
+            this.accessDeniedStrategy = (AccessDeniedStrategy) new ForbiddenAccessDeniedStrategy();
+        }
+
     }
 
     public enum InitParameter {
-        LOGON_ERROR_RESPONSE_CODE("logonErrorResponseCode"),
+        ACCESS_DENIED_STRATEGY("accessDeniedStrategy"),
         ENABLED("enabled"),
         PRINCIPAL_FORMAT("principalFormat"),
         ROLE_FORMAT("roleFormat"),

@@ -126,7 +126,7 @@ public class SecurityFilterProviderCollection {
     }
 
     public SecurityFilterProvider get(final int pos) {
-        if(providers == null) {
+        if (providers == null) {
             return null;
         }
         return providers.get(pos);
