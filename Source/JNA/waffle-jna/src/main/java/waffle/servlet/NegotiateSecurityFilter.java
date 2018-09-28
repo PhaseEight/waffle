@@ -332,47 +332,48 @@ public class NegotiateSecurityFilter implements Filter {
                 final String parameterValue = filterConfig.getInitParameter(parameterName);
                 NegotiateSecurityFilter.LOGGER.debug("Init Param: '{}={}'", parameterName, parameterValue);
                 InitParameter initParam = InitParameter.get(parameterName);
-                if (initParam == null) {
-                    throw new ServletException(String.format("Invalid parameter: %s", parameterName));
-                } else {
-                    switch (initParam) {
-                        case ACCESS_DENIED_STRATEGY:
-                            this.setAccessDeniedStrategy(parameterValue);
-                            break;
-                        case ENABLED:
-                            this.enabled = Boolean.parseBoolean(parameterValue);
-                            break;
-                        case PRINCIPAL_FORMAT:
-                            this.principalFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
-                            break;
-                        case ROLE_FORMAT:
-                            this.roleFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
-                            break;
-                        case ALLOW_GUEST_LOGIN:
-                            this.allowGuestLogin = Boolean.parseBoolean(parameterValue);
-                            break;
-                        case IMPERSONATE:
-                            this.impersonate = Boolean.parseBoolean(parameterValue);
-                            break;
-                        case SECURITY_FILTER_PROVIDER:
-                            providerNames = parameterValue.split("\\s+");
-                            break;
-                        case AUTH_PROVIDER:
-                            authProvider = parameterValue;
-                            break;
-                        case EXCLUDE_PATTERNS:
-                            this.excludePatterns = parameterValue.split("\\s+");
-                            break;
-                        case EXCLUDE_CORS_PREFLIGHT:
-                            this.setExcludeCorsPreflight(Boolean.parseBoolean(parameterValue));
-                            break;
-                        case EXCLUDE_BEARER_AUTHORIZATION:
-                            this.setExcludeBearerAuthorization(Boolean.parseBoolean(parameterValue));
-                            break;
-                        case PROVIDER_PARAMETER:
-                            implParameters.put(parameterName, parameterValue);
-                            break;
-                    }
+                switch (initParam) {
+                    case ACCESS_DENIED_STRATEGY:
+                        this.setAccessDeniedStrategy(parameterValue);
+                        break;
+                    case LOGON_ERROR_RESPONSE_CODE:
+                        this.setAccessDeniedStrategy(Integer.parseInt(parameterValue));
+                        break;
+                    case ENABLED:
+                        this.enabled = Boolean.parseBoolean(parameterValue);
+                        break;
+                    case PRINCIPAL_FORMAT:
+                        this.principalFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
+                        break;
+                    case ROLE_FORMAT:
+                        this.roleFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
+                        break;
+                    case ALLOW_GUEST_LOGIN:
+                        this.allowGuestLogin = Boolean.parseBoolean(parameterValue);
+                        break;
+                    case IMPERSONATE:
+                        this.impersonate = Boolean.parseBoolean(parameterValue);
+                        break;
+                    case SECURITY_FILTER_PROVIDER:
+                        providerNames = parameterValue.split("\\s+");
+                        break;
+                    case AUTH_PROVIDER:
+                        authProvider = parameterValue;
+                        break;
+                    case EXCLUDE_PATTERNS:
+                        this.excludePatterns = parameterValue.split("\\s+");
+                        break;
+                    case EXCLUDE_CORS_PREFLIGHT:
+                        this.setExcludeCorsPreflight(Boolean.parseBoolean(parameterValue));
+                        break;
+                    case EXCLUDE_BEARER_AUTHORIZATION:
+                        this.setExcludeBearerAuthorization(Boolean.parseBoolean(parameterValue));
+                        break;
+                    case PROVIDER_PARAMETER:
+                        implParameters.put(parameterName, parameterValue);
+                        break;
+                    case UNSUPPORTED:
+                        throw new ServletException(String.format("Invalid parameter: %s", parameterName));
                 }
             }
         }
@@ -582,18 +583,33 @@ public class NegotiateSecurityFilter implements Filter {
         return this.accessDeniedStrategy;
     }
 
-    public void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException{
+    public void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException {
 
-        if("UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
-            this.accessDeniedStrategy = (AccessDeniedStrategy) new UnauthorizedAccessDeniedStrategy();
+        if ("UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
+            this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
+        } else if ("FORBIDDEN".equalsIgnoreCase(accessDeniedStrategy)) {
+            this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
         }
-        else{
-            this.accessDeniedStrategy = (AccessDeniedStrategy) new ForbiddenAccessDeniedStrategy();
+        else {
+            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedStrategy));
+        }
+
+    }
+    public void setAccessDeniedStrategy(int accessDeniedStrategy) throws ServletException {
+
+        if (accessDeniedStrategy == 401 ) {
+            this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
+        } else if (accessDeniedStrategy == 403 ) {
+            this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
+        }
+        else {
+            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedStrategy));
         }
 
     }
 
     public enum InitParameter {
+        LOGON_ERROR_RESPONSE_CODE("logonErrorResponseCode"),
         ACCESS_DENIED_STRATEGY("accessDeniedStrategy"),
         ENABLED("enabled"),
         PRINCIPAL_FORMAT("principalFormat"),
@@ -605,7 +621,8 @@ public class NegotiateSecurityFilter implements Filter {
         EXCLUDE_PATTERNS("excludePatterns"),
         EXCLUDE_CORS_PREFLIGHT("excludeCorsPreflight"),
         EXCLUDE_BEARER_AUTHORIZATION("excludeBearerAuthorization"),
-        PROVIDER_PARAMETER("provider");
+        PROVIDER_PARAMETER("provider"),
+        UNSUPPORTED("unsupported");
 
         private final String paramName;
 
@@ -634,6 +651,9 @@ public class NegotiateSecurityFilter implements Filter {
             InitParameter parameter = lookup.get(paramName);
             if (parameter == null && paramName.indexOf("/") > 0) {
                 parameter = PROVIDER_PARAMETER;
+            }
+            if(parameter == null){
+                parameter = UNSUPPORTED;
             }
             return parameter;
         }
