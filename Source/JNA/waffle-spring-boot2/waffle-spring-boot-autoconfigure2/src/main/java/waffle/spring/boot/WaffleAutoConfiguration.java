@@ -39,7 +39,6 @@ import waffle.windows.auth.impl.WindowsAuthProviderImpl;
  */
 @Configuration
 @EnableConfigurationProperties(WaffleProperties.class)
-@SuppressWarnings("unchecked")
 public class WaffleAutoConfiguration {
 
     /** The properties. */
@@ -234,8 +233,10 @@ public class WaffleAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty("waffle.sso.enabled")
-    public FilterRegistrationBean waffleNegotiateSecurityFilterRegistrationBean(final NegotiateSecurityFilter filter) {
-        final FilterRegistrationBean bean = new FilterRegistrationBean(filter);
+    public FilterRegistrationBean<NegotiateSecurityFilter> waffleNegotiateSecurityFilterRegistrationBean(
+            final NegotiateSecurityFilter filter) {
+        final FilterRegistrationBean<NegotiateSecurityFilter> bean = new FilterRegistrationBean<NegotiateSecurityFilter>(
+                filter);
         bean.setEnabled(false);
         return bean;
     }
