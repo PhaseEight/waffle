@@ -157,13 +157,13 @@
         <signature.version>1.0</signature.version>
 
         <!-- Plugins -->
-        <animal-sniffer.plugin>1.17</animal-sniffer.plugin>
+        <animal-sniffer.plugin>1.18</animal-sniffer.plugin>
         <antrun.plugin>1.8</antrun.plugin>
         <assembly.plugin>3.1.1</assembly.plugin>
         <build-helper.plugin>3.0.0</build-helper.plugin>
         <changelog.plugin>2.3</changelog.plugin>
         <changes.plugin>2.12.1</changes.plugin>
-        <checkstyle.plugin>3.0.0</checkstyle.plugin>
+        <checkstyle.plugin>3.1.0</checkstyle.plugin>
         <clean.plugin>3.1.0</clean.plugin>
         <compiler.plugin>3.8.1</compiler.plugin>
         <coveralls.plugin>4.3.0</coveralls.plugin>
@@ -191,7 +191,7 @@
         <release.plugin>2.5.3</release.plugin>
         <resources.plugin>3.1.0</resources.plugin>
         <scm.plugin>1.11.2</scm.plugin>
-        <source.plugin>3.0.1</source.plugin>
+        <source.plugin>3.1.0</source.plugin>
         <spotbugs.plugin>3.1.11</spotbugs.plugin>
         <site.plugin>3.7.1</site.plugin>
         <sonar.plugin>3.6.0.1398</sonar.plugin>
@@ -206,7 +206,7 @@
         <!-- Plugin Dependency Versions -->
         <bug-pattern.version>1.4.2</bug-pattern.version>
         <build-tools.version>1.1.8</build-tools.version>
-        <checkstyle.version>8.20</checkstyle.version>
+        <checkstyle.version>8.21</checkstyle.version>
         <doxia.version>1.8</doxia.version>
         <fb-contrib.version>7.4.5</fb-contrib.version>
         <findsecbugs.version>1.9.0</findsecbugs.version>
