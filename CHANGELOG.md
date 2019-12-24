@@ -1,3 +1,18 @@
+2.1.1 (in-progress)
+===================
+
+TBD
+
+2.1.0 (9/15/2019)
+=================
+* Remove obsolete tomcat8 from project - use tomcat 85 as a direct replacement
+* Correctly align spring boot 2 starter to spring security 5 module
+
+2.0.0 (6/27/2019)
+=================
+* Dependency Updates
+* Stabalized Release
+
 2.0.0-beta2 (2/6/2019)
 ======================
 * Add spring boot demos to distro
