@@ -1,7 +1,8 @@
 2.1.1 (in-progress)
 ===================
-
-TBD
+* Cleanup documentation
+* Depenency updates
+* Cleanup some build issues
 
 2.1.0 (9/15/2019)
 =================
