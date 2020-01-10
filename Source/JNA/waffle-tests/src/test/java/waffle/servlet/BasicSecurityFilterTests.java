@@ -1,7 +1,7 @@
-/**
+/*
  * Waffle (https://github.com/Waffle/waffle)
  *
- * Copyright (c) 2010-2018 Application Security, Inc.
+ * Copyright (c) 2010-2019 Application Security, Inc.
  *
  * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
  * Public License v1.0 which accompanies this distribution, and is available at
@@ -23,12 +23,10 @@ import javax.servlet.ServletException;
 
 import org.junit.jupiter.api.*;
 
-import waffle.mock.MockFailedAuthenticationWindowsAuthProvider;
 import waffle.mock.MockWindowsAuthProvider;
 import waffle.mock.http.SimpleFilterChain;
 import waffle.mock.http.SimpleHttpRequest;
 import waffle.mock.http.SimpleHttpResponse;
-import waffle.servlet.spi.NegotiateSecurityFilterProvider;
 import waffle.windows.auth.impl.WindowsAccountImpl;
 
 /**
@@ -40,16 +38,31 @@ public class BasicSecurityFilterTests {
 
     /** The filter. */
     private NegotiateSecurityFilter filter;
+    private SimpleHttpRequest request;
+    private SimpleHttpResponse response;
+    private FilterChain filterChain;
 
     /**
-     * Sets the up.
-     *
-     * @throws ServletException
-     *             the servlet exception
+     * Set up.
+     * 
+     * @throws javax.servlet.ServletException
      */
     @BeforeEach
-    public void setUp() throws ServletException {
+    public void setUp() throws javax.servlet.ServletException {
+
         this.filter = new NegotiateSecurityFilter();
+        this.filter.setAuth(new MockWindowsAuthProvider());
+        this.filter.init(null);
+        this.request = new SimpleHttpRequest();
+        this.request.setMethod("GET");
+
+        final String userHeaderValue = WindowsAccountImpl.getCurrentUsername() + ":password";
+        final String basicAuthHeader = "Basic "
+                + Base64.getEncoder().encodeToString(userHeaderValue.getBytes(StandardCharsets.UTF_8));
+        this.request.addHeader("Authorization", basicAuthHeader);
+
+        this.response = new SimpleHttpResponse();
+        this.filterChain = new SimpleFilterChain();
     }
 
     /**
@@ -70,18 +83,7 @@ public class BasicSecurityFilterTests {
      */
     @Test
     public void testBasicAuth() throws IOException, ServletException {
-        this.filter.setAuth(new MockWindowsAuthProvider());
-        this.filter.init(null);
-        final SimpleHttpRequest request = new SimpleHttpRequest();
-        request.setMethod("GET");
 
-        final String userHeaderValue = WindowsAccountImpl.getCurrentUsername() + ":password";
-        final String basicAuthHeader = "Basic "
-                + Base64.getEncoder().encodeToString(userHeaderValue.getBytes(StandardCharsets.UTF_8));
-        request.addHeader("Authorization", basicAuthHeader);
-
-        final SimpleHttpResponse response = new SimpleHttpResponse();
-        final FilterChain filterChain = new SimpleFilterChain();
         this.filter.doFilter(request, response, filterChain);
         final Subject subject = (Subject) request.getSession(false).getAttribute("javax.security.auth.subject");
         Assertions.assertNotNull(subject);
@@ -90,18 +92,6 @@ public class BasicSecurityFilterTests {
 
     @Test
     public void testFailedBasicAuth() throws IOException, ServletException {
-        this.filter.setAuth(new MockFailedAuthenticationWindowsAuthProvider());
-        this.filter.init(null);
-        final SimpleHttpRequest request = new SimpleHttpRequest();
-        request.setMethod("GET");
-
-        final String userHeaderValue = WindowsAccountImpl.getCurrentUsername() + ":password";
-        final String basicAuthHeader = "Basic "
-                + Base64.getEncoder().encodeToString(userHeaderValue.getBytes(StandardCharsets.UTF_8));
-        request.addHeader("Authorization", basicAuthHeader);
-
-        final SimpleHttpResponse response = new SimpleHttpResponse();
-        final FilterChain filterChain = new SimpleFilterChain();
         this.filter.doFilter(request, response, filterChain);
         Assertions.assertEquals(401, response.getStatus());
     }

@@ -1,7 +1,7 @@
-/**
+/*
  * Waffle (https://github.com/Waffle/waffle)
  *
- * Copyright (c) 2010-2018 Application Security, Inc.
+ * Copyright (c) 2010-2019 Application Security, Inc.
  *
  * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
  * Public License v1.0 which accompanies this distribution, and is available at
@@ -9,10 +9,18 @@
  *
  * Contributors: Application Security, Inc.
  */
-package waffle.mock;
+/*
+  Waffle (https://github.com/Waffle/waffle)
 
-import com.sun.jna.platform.win32.Secur32.EXTENDED_NAME_FORMAT;
-import com.sun.jna.platform.win32.Secur32Util;
+  Copyright (c) 2010-2019 Application Security, Inc.
+
+  All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
+  Public License v1.0 which accompanies this distribution, and is available at
+  https://www.eclipse.org/legal/epl-v10.html.
+
+  Contributors: Application Security, Inc.
+ */
+package waffle.mock;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

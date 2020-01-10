@@ -1,7 +1,7 @@
-/**
+/*
  * Waffle (https://github.com/Waffle/waffle)
  *
- * Copyright (c) 2010-2018 Application Security, Inc.
+ * Copyright (c) 2010-2019 Application Security, Inc.
  *
  * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
  * Public License v1.0 which accompanies this distribution, and is available at
@@ -521,7 +521,7 @@ public class NegotiateSecurityFilterTests {
     @Test
     void testCorsAndBearerAuthorizationI_init(@Mocked final FilterConfig filterConfig) throws Exception {
 
-        /** The init parameter names. */
+        /* The init parameter names. */
         final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
 
             /** The Constant serialVersionUID. */
@@ -601,7 +601,7 @@ public class NegotiateSecurityFilterTests {
             @Mocked final HttpServletResponse response, @Mocked final FilterChain chain,
             @Mocked final FilterConfig filterConfig) throws Exception {
 
-        /** The init parameter names. */
+        /* The init parameter names. */
         final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
 
             /** The Constant serialVersionUID. */
@@ -673,7 +673,7 @@ public class NegotiateSecurityFilterTests {
     void testNotEnabledFilter(@Mocked final HttpServletRequest request, @Mocked final HttpServletResponse response,
             @Mocked final FilterChain chain, @Mocked final FilterConfig filterConfig) throws Exception {
 
-        /** The init parameter names. */
+        /* The init parameter names. */
         final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
 
             /** The Constant serialVersionUID. */
