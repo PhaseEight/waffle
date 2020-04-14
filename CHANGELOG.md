@@ -1,7 +1,33 @@
-2.1.1 (in-progress)
+2.3.0 (in-progress)
 ===================
+* Introduction of waffle-tomcat10 module
+
+2.2.2 (in-progress)
+===================
+* TODO
+
+2.2.1 (1/26/2020)
+================
+* Fixed checkstyle configuration that failed 2.2.0 release.
+
+2.2.0 (not released)
+====================
+* Security Check in tomcat valves performs a redirect to servletPath when successful. This is not required to finish the chain and causes an underlying error when servletPath returns empty string. This redirect has been removed.
+* Negotiate Check in tomcat valves performs half the necessary negotiation which is resulting in popup to log into windows. By catching the negotiation result and forcing a redirect to error page as intended (similar to security check), the browser and tomcat are able to successfully negotiate the communication without unnecessary popup to the user. Note that first request will still require popup to get data primed but all subsequent after logging out and back in save the hit.
+* Added logback to demos.  It was defined and confirmed but not setup.
 * Cleanup documentation
-* Depenency updates
+* Dependency updates
+* Add build environment entries to jar, source, and war modules
+* Add JPMS automatic module naming throughout
+* Moved onto Spring boot 2.2.x (no compatibility changes over 2.1.x)
+* Moved onto Spring 5.2.x (no compatibility changes over 5.1.x)
+* Fix sonar issues including prevention of XML entity attacks and other security related items
+* Fix spring boot modules as JNA alignment was broken
+
+2.1.1 (12/26/2019)
+==================
+* Cleanup documentation
+* Dependency updates
 * Cleanup some build issues
 
 2.1.0 (9/15/2019)
@@ -390,4 +416,3 @@ Misc
 ==============
 
 Initial open-source release under the Eclipse Public License.
-

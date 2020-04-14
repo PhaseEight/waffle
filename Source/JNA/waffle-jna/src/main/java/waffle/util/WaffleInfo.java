@@ -1,7 +1,7 @@
 /**
  * Waffle (https://github.com/Waffle/waffle)
  *
- * Copyright (c) 2010-2018 Application Security, Inc.
+ * Copyright (c) 2010-2020 Application Security, Inc.
  *
  * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
  * Public License v1.0 which accompanies this distribution, and is available at
@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -97,7 +98,12 @@ public class WaffleInfo {
      *             when getting new document builder.
      */
     public Document getWaffleInfo() throws ParserConfigurationException {
-        final Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        final DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
+        df.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        df.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        df.setExpandEntityReferences(false);
+
+        final Document doc = df.newDocumentBuilder().newDocument();
 
         // create the root element and add it to the document
         final Element root = doc.createElement("waffle");
@@ -280,6 +286,9 @@ public class WaffleInfo {
     public static String toPrettyXML(final Document doc) throws TransformerException {
         // set up a transformer
         final TransformerFactory transfac = TransformerFactory.newInstance();
+        transfac.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        transfac.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
         final Transformer trans = transfac.newTransformer();
         trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         trans.setOutputProperty(OutputKeys.INDENT, "yes");
