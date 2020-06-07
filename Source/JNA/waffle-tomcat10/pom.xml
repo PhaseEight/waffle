@@ -27,7 +27,7 @@
 
     <name>waffle-tomcat10</name>
     <description>Tomcat 10 integration for WAFFLE</description>
-    <url>https://waffle.github.com/waffle/</url>
+    <url>https://waffle.github.io/waffle/</url>
 
     <scm>
         <connection>scm:git:ssh://git@github.com/waffle/waffle.git</connection>
@@ -38,7 +38,7 @@
 
     <properties>
         <!-- Dependencies -->
-        <tomcat.version>10.0.0-M3</tomcat.version>
+        <tomcat.version>10.0.0-M5</tomcat.version>
 
         <!-- Automatic Module Name for JPMS -->
         <module.name>waffle.tomcat10</module.name>
