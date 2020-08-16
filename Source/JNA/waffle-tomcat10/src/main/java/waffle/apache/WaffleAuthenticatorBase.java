@@ -1,4 +1,4 @@
-/**
+/*
  * Waffle (https://github.com/Waffle/waffle)
  *
  * Copyright (c) 2010-2020 Application Security, Inc.
@@ -10,6 +10,9 @@
  * Contributors: Application Security, Inc.
  */
 package waffle.apache;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -28,9 +31,6 @@ import waffle.windows.auth.IWindowsAuthProvider;
 import waffle.windows.auth.IWindowsIdentity;
 import waffle.windows.auth.PrincipalFormat;
 import waffle.windows.auth.impl.WindowsAuthProviderImpl;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * The Class WaffleAuthenticatorBase.

@@ -1,7 +1,7 @@
-/**
+/*
  * Waffle (https://github.com/Waffle/waffle)
  *
- * Copyright (c) 2010-2018 Application Security, Inc.
+ * Copyright (c) 2010-2020 Application Security, Inc.
  *
  * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
  * Public License v1.0 which accompanies this distribution, and is available at
@@ -18,7 +18,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -84,7 +83,7 @@ public class WindowsLoginModule implements LoginModule {
         this.subject = initSubject;
         this.callbackHandler = initCallbackHandler;
 
-        for (final Entry<String, ?> option : initOptions.entrySet()) {
+        for (final Map.Entry<String, ?> option : initOptions.entrySet()) {
             if ("debug".equalsIgnoreCase(option.getKey())) {
                 this.debug = Boolean.parseBoolean((String) option.getValue());
             } else if ("principalFormat".equalsIgnoreCase(option.getKey())) {

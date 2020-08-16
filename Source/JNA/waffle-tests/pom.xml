@@ -18,11 +18,11 @@
     <parent>
         <groupId>com.github.waffle</groupId>
         <artifactId>waffle-parent</artifactId>
-        <version>2.2.2-SNAPSHOT</version>
+        <version>2.3.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>waffle-tests</artifactId>
-    <version>2.2.2-SNAPSHOT</version>
+    <version>2.3.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>waffle-tests</name>
@@ -38,10 +38,10 @@
 
     <properties>
         <!-- Dependencies -->
-        <byte-buddy.version>1.10.11</byte-buddy.version>
-        <mockito-core.version>3.3.3</mockito-core.version>
+        <byte-buddy.version>1.10.14</byte-buddy.version>
+        <mockito-core.version>3.4.6</mockito-core.version>
         <objenesis.version>3.1</objenesis.version>
-        <servlet.version>4.0.3</servlet.version>
+        <servlet.version>4.0.4</servlet.version>
 
         <!-- Automatic Module Name for JPMS -->
         <module.name>waffle.tests</module.name>
