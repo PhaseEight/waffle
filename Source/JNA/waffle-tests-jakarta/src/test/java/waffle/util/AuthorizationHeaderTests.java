@@ -1,13 +1,25 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.util;
 
@@ -31,7 +43,7 @@ public class AuthorizationHeaderTests {
      * Test is null.
      */
     @Test
-    public void testIsNull() {
+    void testIsNull() {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         final AuthorizationHeader header = new AuthorizationHeader(request);
         Assertions.assertTrue(header.isNull());
@@ -45,7 +57,7 @@ public class AuthorizationHeaderTests {
      * Test get security package.
      */
     @Test
-    public void testGetSecurityPackage() {
+    void testGetSecurityPackage() {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         final AuthorizationHeader header = new AuthorizationHeader(request);
         request.addHeader("Authorization", "NTLM TlRMTVNTUAABAAAABzIAAAYABgArAAAACwALACAAAABXT1JLU1RBVElPTkRPTUFJTg==");
@@ -59,7 +71,7 @@ public class AuthorizationHeaderTests {
      * Test is ntlm type1 message.
      */
     @Test
-    public void testIsNtlmType1Message() {
+    void testIsNtlmType1Message() {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         final AuthorizationHeader header = new AuthorizationHeader(request);
         Assertions.assertFalse(header.isNtlmType1Message());
@@ -73,7 +85,7 @@ public class AuthorizationHeaderTests {
      * Test is ntlm type1 post authorization header.
      */
     @Test
-    public void testIsNtlmType1PostAuthorizationHeader() {
+    void testIsNtlmType1PostAuthorizationHeader() {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.setContentLength(0);
         request.addHeader("Authorization", "NTLM TlRMTVNTUAABAAAABzIAAAYABgArAAAACwALACAAAABXT1JLU1RBVElPTkRPTUFJTg==");
@@ -93,7 +105,7 @@ public class AuthorizationHeaderTests {
      * Test is sp nego message.
      */
     @Test
-    public void testIsSPNegTokenInitMessage() {
+    void testIsSPNegTokenInitMessage() {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         final AuthorizationHeader header = new AuthorizationHeader(request);
         Assertions.assertFalse(header.isSPNegTokenInitMessage());
@@ -108,7 +120,7 @@ public class AuthorizationHeaderTests {
      * Test is sp nego post authorization header.
      */
     @Test
-    public void testIsSPNegoPostAuthorizationHeader() {
+    void testIsSPNegoPostAuthorizationHeader() {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.setContentLength(0);
         request.addHeader("Authorization",
@@ -131,7 +143,7 @@ public class AuthorizationHeaderTests {
      * Digest which is closely related to NTLM but not supported in Waffle.
      */
     @Test
-    public void testIsDigestAuthorizationHeaderFailure() {
+    void testIsDigestAuthorizationHeaderFailure() {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         final AuthorizationHeader header = new AuthorizationHeader(request);
         request.addHeader("Authorization", AuthorizationHeaderTests.DIGEST_HEADER);

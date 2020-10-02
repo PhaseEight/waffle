@@ -1,13 +1,25 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.apache;
 
@@ -44,7 +56,7 @@ public class WindowsAccountTests {
      * Sets the up.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         this.windowsAccount = new WindowsAccount(this.mockWindowsAccount);
     }
 
@@ -52,7 +64,7 @@ public class WindowsAccountTests {
      * Test equals.
      */
     @Test
-    public void testEquals() {
+    void testEquals() {
         Assertions.assertEquals(this.windowsAccount, new WindowsAccount(this.mockWindowsAccount));
         final MockWindowsAccount mockWindowsAccount2 = new MockWindowsAccount("localhost\\Administrator2");
         Assertions.assertFalse(this.windowsAccount.equals(new WindowsAccount(mockWindowsAccount2)));
@@ -67,7 +79,7 @@ public class WindowsAccountTests {
      *             the class not found exception
      */
     @Test
-    public void testIsSerializable() throws IOException, ClassNotFoundException {
+    void testIsSerializable() throws IOException, ClassNotFoundException {
         // serialize
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (final ObjectOutputStream oos = new ObjectOutputStream(out)) {
@@ -90,7 +102,7 @@ public class WindowsAccountTests {
      * Test properties.
      */
     @Test
-    public void testProperties() {
+    void testProperties() {
         Assertions.assertEquals("localhost", this.windowsAccount.getDomain());
         Assertions.assertEquals("localhost\\Administrator", this.windowsAccount.getFqn());
         Assertions.assertEquals("Administrator", this.windowsAccount.getName());

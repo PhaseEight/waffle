@@ -1,13 +1,25 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.servlet;
 
@@ -24,11 +36,11 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.security.auth.Subject;
 
@@ -316,10 +328,9 @@ public class NegotiateSecurityFilter implements Filter {
         String authProvider = null;
         String[] providerNames = null;
         if (filterConfig != null) {
-            final Enumeration<String> parameterNames = filterConfig.getInitParameterNames();
+            final List<String> parameterNames = Collections.list(filterConfig.getInitParameterNames());
             NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] processing filterConfig");
-            while (parameterNames.hasMoreElements()) {
-                final String parameterName = parameterNames.nextElement();
+            for (String parameterName : parameterNames) {
                 final String parameterValue = filterConfig.getInitParameter(parameterName);
                 NegotiateSecurityFilter.LOGGER.debug("Init Param: '{}={}'", parameterName, parameterValue);
                 switch (parameterName) {
@@ -336,13 +347,13 @@ public class NegotiateSecurityFilter implements Filter {
                         this.impersonate = Boolean.parseBoolean(parameterValue);
                         break;
                     case "securityFilterProviders":
-                        providerNames = parameterValue.split("\\s+");
+                        providerNames = parameterValue.split("\\s+", -1);
                         break;
                     case "authProvider":
                         authProvider = parameterValue;
                         break;
                     case "excludePatterns":
-                        this.excludePatterns = parameterValue.split("\\s+");
+                        this.excludePatterns = parameterValue.split("\\s+", -1);
                         break;
                     case "excludeCorsPreflight":
                         this.excludeCorsPreflight = Boolean.parseBoolean(parameterValue);
@@ -389,7 +400,7 @@ public class NegotiateSecurityFilter implements Filter {
 
         // apply provider implementation parameters
         NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] load provider parameters");
-        for (final Entry<String, String> implParameter : implParameters.entrySet()) {
+        for (final Map.Entry<String, String> implParameter : implParameters.entrySet()) {
             final String[] classAndParameter = implParameter.getKey().split("/", 2);
             if (classAndParameter.length == 2) {
                 try {

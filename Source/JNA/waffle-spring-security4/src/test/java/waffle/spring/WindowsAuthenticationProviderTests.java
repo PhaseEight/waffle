@@ -1,13 +1,25 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.spring;
 
@@ -50,7 +62,7 @@ public class WindowsAuthenticationProviderTests {
      * Sets the up.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         final String[] configFiles = new String[] { "springTestAuthBeans.xml" };
         this.ctx = new ClassPathXmlApplicationContext(configFiles);
         this.provider = (WindowsAuthenticationProvider) this.ctx.getBean("waffleSpringAuthenticationProvider");
@@ -60,7 +72,7 @@ public class WindowsAuthenticationProviderTests {
      * Shut down.
      */
     @AfterEach
-    public void shutDown() {
+    void shutDown() {
         ((AbstractApplicationContext) this.ctx).close();
     }
 
@@ -68,7 +80,7 @@ public class WindowsAuthenticationProviderTests {
      * Test windows authentication provider.
      */
     @Test
-    public void testWindowsAuthenticationProvider() {
+    void testWindowsAuthenticationProvider() {
         Assertions.assertTrue(this.provider.isAllowGuestLogin());
         Assertions.assertTrue(this.provider.getAuthProvider() instanceof MockWindowsAuthProvider);
         Assertions.assertEquals(PrincipalFormat.SID, this.provider.getPrincipalFormat());
@@ -79,7 +91,7 @@ public class WindowsAuthenticationProviderTests {
      * Test supports.
      */
     @Test
-    public void testSupports() {
+    void testSupports() {
         Assertions.assertFalse(this.provider.supports(this.getClass()));
         Assertions.assertTrue(this.provider.supports(UsernamePasswordAuthenticationToken.class));
     }
@@ -88,7 +100,7 @@ public class WindowsAuthenticationProviderTests {
      * Test authenticate.
      */
     @Test
-    public void testAuthenticate() {
+    void testAuthenticate() {
         final MockWindowsIdentity mockIdentity = new MockWindowsIdentity(WindowsAccountImpl.getCurrentUsername(),
                 new ArrayList<String>());
         final WindowsPrincipal principal = new WindowsPrincipal(mockIdentity);
@@ -115,7 +127,7 @@ public class WindowsAuthenticationProviderTests {
      * Test authenticate with custom granted authority factory.
      */
     @Test
-    public void testAuthenticateWithCustomGrantedAuthorityFactory() {
+    void testAuthenticateWithCustomGrantedAuthorityFactory() {
         this.provider.setDefaultGrantedAuthority(null);
         this.provider.setGrantedAuthorityFactory(new FqnGrantedAuthorityFactory(null, false));
 
@@ -145,7 +157,7 @@ public class WindowsAuthenticationProviderTests {
      * Test guest is disabled.
      */
     @Test
-    public void testGuestIsDisabled() {
+    void testGuestIsDisabled() {
         final MockWindowsIdentity mockIdentity = new MockWindowsIdentity("Guest", new ArrayList<String>());
         this.provider.setAllowGuestLogin(false);
         final WindowsPrincipal principal = new WindowsPrincipal(mockIdentity);

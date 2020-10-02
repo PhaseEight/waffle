@@ -1,21 +1,34 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.jaas;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.Principal;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.Subject;
@@ -45,7 +58,7 @@ public class WindowsLoginModuleTests {
      * Sets the up.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         this.provider = new MockWindowsAuthProvider();
         this.loginModule = new WindowsLoginModule();
         this.loginModule.setAuth(this.provider);
@@ -55,7 +68,7 @@ public class WindowsLoginModuleTests {
      * Test initialize.
      */
     @Test
-    public void testInitialize() {
+    void testInitialize() {
         final Subject subject = new Subject();
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler("", "");
         final Map<String, String> options = new HashMap<>();
@@ -68,7 +81,7 @@ public class WindowsLoginModuleTests {
      * Test get set auth.
      */
     @Test
-    public void testGetSetAuth() {
+    void testGetSetAuth() {
         Assertions.assertNotNull(this.loginModule.getAuth());
         this.loginModule.setAuth(null);
         Assertions.assertNull(this.loginModule.getAuth());
@@ -81,7 +94,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testLogin() throws LoginException {
+    void testLogin() throws LoginException {
         final Subject subject = new Subject();
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler(
                 WindowsAccountImpl.getCurrentUsername(), "password");
@@ -112,7 +125,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testNoCallbackHandler() throws LoginException {
+    void testNoCallbackHandler() throws LoginException {
         final Subject subject = new Subject();
         final Map<String, String> options = new HashMap<>();
         this.loginModule.initialize(subject, null, null, options);
@@ -128,7 +141,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testLoginNoUsername() throws LoginException {
+    void testLoginNoUsername() throws LoginException {
         final Subject subject = new Subject();
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler("", "");
         final Map<String, String> options = new HashMap<>();
@@ -147,7 +160,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testRoleFormatNone() throws LoginException {
+    void testRoleFormatNone() throws LoginException {
         final Subject subject = new Subject();
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler(
                 WindowsAccountImpl.getCurrentUsername(), "password");
@@ -167,7 +180,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testRoleFormatBoth() throws LoginException {
+    void testRoleFormatBoth() throws LoginException {
         final Subject subject = new Subject();
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler(
                 WindowsAccountImpl.getCurrentUsername(), "password");
@@ -184,9 +197,10 @@ public class WindowsLoginModuleTests {
             if (principal instanceof GroupPrincipal) {
                 int size = 0;
                 int sidSize = 0;
-                final Enumeration<? extends Principal> groupPrincipal = ((GroupPrincipal) principal).members();
-                while (groupPrincipal.hasMoreElements()) {
-                    if (groupPrincipal.nextElement().getName().startsWith("S-")) {
+                final List<? extends Principal> groupPrincipals = Collections
+                        .list(((GroupPrincipal) principal).members());
+                for (Principal groupPrincipal : groupPrincipals) {
+                    if (groupPrincipal.getName().startsWith("S-")) {
                         sidSize++;
                     }
                     size++;
@@ -206,7 +220,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testPrincipalFormatBoth() throws LoginException {
+    void testPrincipalFormatBoth() throws LoginException {
         final Subject subject = new Subject();
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler(
                 WindowsAccountImpl.getCurrentUsername(), "password");
@@ -227,7 +241,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testRoleFormatSid() throws LoginException {
+    void testRoleFormatSid() throws LoginException {
         final Subject subject = new Subject();
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler(
                 WindowsAccountImpl.getCurrentUsername(), "password");
@@ -243,9 +257,10 @@ public class WindowsLoginModuleTests {
         for (final Principal principal : subject.getPrincipals()) {
             if (principal instanceof GroupPrincipal) {
                 int size = 0;
-                final Enumeration<? extends Principal> groupPrincipal = ((GroupPrincipal) principal).members();
-                while (groupPrincipal.hasMoreElements()) {
-                    if (groupPrincipal.nextElement().getName().startsWith("S-")) {
+                final List<? extends Principal> groupPrincipals = Collections
+                        .list(((GroupPrincipal) principal).members());
+                for (Principal groupPrincipal : groupPrincipals) {
+                    if (groupPrincipal.getName().startsWith("S-")) {
                         size++;
                     }
                 }
@@ -263,7 +278,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testRoleUnique() throws LoginException {
+    void testRoleUnique() throws LoginException {
         final Subject subject = new Subject();
         // the mock has an "Everyone" group
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler(
@@ -280,12 +295,7 @@ public class WindowsLoginModuleTests {
         Assertions.assertTrue(subject.getPrincipals().contains(new GroupPrincipal("Roles")));
         for (final Principal principal : subject.getPrincipals()) {
             if (principal instanceof GroupPrincipal) {
-                int size = 0;
-                final Enumeration<? extends Principal> groupPrincipal = ((GroupPrincipal) principal).members();
-                while (groupPrincipal.hasMoreElements()) {
-                    groupPrincipal.nextElement();
-                    size++;
-                }
+                int size = Collections.list(((GroupPrincipal) principal).members()).size();
                 Assertions.assertEquals(3, size);
                 Assertions.assertTrue(((GroupPrincipal) principal).isMember(new RolePrincipal("Everyone")));
                 Assertions.assertTrue(((GroupPrincipal) principal).isMember(new RolePrincipal("Users")));
@@ -301,7 +311,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testGuestLogin() throws LoginException {
+    void testGuestLogin() throws LoginException {
         final Subject subject = new Subject();
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler("Guest",
                 "password");
@@ -334,7 +344,7 @@ public class WindowsLoginModuleTests {
      *             the login exception
      */
     @Test
-    public void testAbort() throws LoginException {
+    void testAbort() throws LoginException {
         final Subject subject = new Subject();
         final UsernamePasswordCallbackHandler callbackHandler = new UsernamePasswordCallbackHandler("Guest",
                 "password");

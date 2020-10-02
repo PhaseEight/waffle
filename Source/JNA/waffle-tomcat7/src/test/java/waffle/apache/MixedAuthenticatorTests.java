@@ -1,13 +1,25 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.apache;
 
@@ -70,7 +82,7 @@ public class MixedAuthenticatorTests {
      *             the lifecycle exception
      */
     @BeforeEach
-    public void setUp() throws LifecycleException {
+    void setUp() throws LifecycleException {
         this.authenticator = new MixedAuthenticator();
         this.authenticator.setContainer(this.context);
         Assertions.assertNotNull(new Expectations() {
@@ -93,7 +105,7 @@ public class MixedAuthenticatorTests {
      *             the lifecycle exception
      */
     @AfterEach
-    public void tearDown() throws LifecycleException {
+    void tearDown() throws LifecycleException {
         this.authenticator.stop();
     }
 
@@ -101,7 +113,7 @@ public class MixedAuthenticatorTests {
      * Test challenge get.
      */
     @Test
-    public void testChallengeGET() {
+    void testChallengeGET() {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.setMethod("GET");
         request.setQueryString("j_negotiate_check");
@@ -121,7 +133,7 @@ public class MixedAuthenticatorTests {
      * Test challenge post.
      */
     @Test
-    public void testChallengePOST() {
+    void testChallengePOST() {
         final LoginConfig loginConfig = new LoginConfig();
         loginConfig.setErrorPage("error.html");
         loginConfig.setLoginPage("login.html");
@@ -165,7 +177,7 @@ public class MixedAuthenticatorTests {
      * Test get.
      */
     @Test
-    public void testGet() {
+    void testGet() {
         final LoginConfig loginConfig = new LoginConfig();
         loginConfig.setErrorPage("error.html");
         loginConfig.setLoginPage("login.html");
@@ -178,7 +190,7 @@ public class MixedAuthenticatorTests {
      * Test get info.
      */
     @Test
-    public void testGetInfo() {
+    void testGetInfo() {
         assertThat(this.authenticator.getInfo().length()).isGreaterThan(0);
     }
 
@@ -186,7 +198,7 @@ public class MixedAuthenticatorTests {
      * Test negotiate.
      */
     @Test
-    public void testNegotiate() {
+    void testNegotiate() {
         final LoginConfig loginConfig = new LoginConfig();
         loginConfig.setErrorPage("error.html");
         loginConfig.setLoginPage("login.html");
@@ -249,7 +261,7 @@ public class MixedAuthenticatorTests {
      * Test post security check.
      */
     @Test
-    public void testPostSecurityCheck() {
+    void testPostSecurityCheck() {
         final LoginConfig loginConfig = new LoginConfig();
         loginConfig.setErrorPage("error.html");
         loginConfig.setLoginPage("login.html");
@@ -270,7 +282,7 @@ public class MixedAuthenticatorTests {
      *             the servlet exception
      */
     @Test
-    public void testProgrammaticSecurityBoth(@Mocked final IWindowsIdentity identity) throws ServletException {
+    void testProgrammaticSecurityBoth(@Mocked final IWindowsIdentity identity) throws ServletException {
         this.authenticator.setAuth(new MockWindowsAuthProvider());
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.setContext((Context) this.authenticator.getContainer());
@@ -301,7 +313,7 @@ public class MixedAuthenticatorTests {
      *             the servlet exception
      */
     @Test
-    public void testProgrammaticSecuritySID(@Mocked final IWindowsIdentity identity) throws ServletException {
+    void testProgrammaticSecuritySID(@Mocked final IWindowsIdentity identity) throws ServletException {
         this.authenticator.setAuth(new MockWindowsAuthProvider());
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.setContext((Context) this.authenticator.getContainer());
@@ -330,7 +342,7 @@ public class MixedAuthenticatorTests {
      *             the servlet exception
      */
     @Test
-    public void testProgrammaticSecurityNone(@Mocked final IWindowsIdentity identity) throws ServletException {
+    void testProgrammaticSecurityNone(@Mocked final IWindowsIdentity identity) throws ServletException {
         this.authenticator.setAuth(new MockWindowsAuthProvider());
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.setContext((Context) this.authenticator.getContainer());
@@ -348,7 +360,7 @@ public class MixedAuthenticatorTests {
      * Test security check parameters.
      */
     @Test
-    public void testSecurityCheckParameters() {
+    void testSecurityCheckParameters() {
         this.authenticator.setAuth(new MockWindowsAuthProvider());
         final LoginConfig loginConfig = new LoginConfig();
         loginConfig.setErrorPage("error.html");
@@ -365,7 +377,7 @@ public class MixedAuthenticatorTests {
      * Test security check query string.
      */
     @Test
-    public void testSecurityCheckQueryString() {
+    void testSecurityCheckQueryString() {
         this.authenticator.setAuth(new MockWindowsAuthProvider());
         final LoginConfig loginConfig = new LoginConfig();
         loginConfig.setErrorPage("error.html");
@@ -379,7 +391,7 @@ public class MixedAuthenticatorTests {
     }
 
     @Test
-    public void testCustomPrincipal() throws LifecycleException, IOException {
+    void testCustomPrincipal() throws LifecycleException, IOException {
         final GenericPrincipal genericPrincipal = new GenericPrincipal("my-principal", "my-password",
                 Collections.emptyList());
         final MixedAuthenticator customAuthenticator = new MixedAuthenticator() {

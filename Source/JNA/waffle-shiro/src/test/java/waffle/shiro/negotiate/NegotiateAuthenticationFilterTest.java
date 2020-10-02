@@ -1,13 +1,25 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.shiro.negotiate;
 
@@ -43,7 +55,7 @@ public final class NegotiateAuthenticationFilterTest {
      * Sets the up.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         this.response = Mockito.mock(MockServletResponse.class, Mockito.CALLS_REAL_METHODS);
         Whitebox.setInternalState(this.response, "headers", new HashMap<>());
         Whitebox.setInternalState(this.response, "headersAdded", new HashMap<>());
@@ -53,7 +65,7 @@ public final class NegotiateAuthenticationFilterTest {
      * Test is login attempt.
      */
     @Test
-    public void testIsLoginAttempt() {
+    void testIsLoginAttempt() {
         Assertions.assertFalse(this.negAuthFilter.isLoginAttempt(""));
         Assertions.assertTrue(this.negAuthFilter.isLoginAttempt("NEGOTIATe"));
         Assertions.assertTrue(this.negAuthFilter.isLoginAttempt("ntlm"));
@@ -63,7 +75,7 @@ public final class NegotiateAuthenticationFilterTest {
      * Test send challenge during negotiate.
      */
     @Test
-    public void testSendChallengeDuringNegotiate() {
+    void testSendChallengeDuringNegotiate() {
 
         final String myProtocol = "myProtocol";
 
@@ -87,7 +99,7 @@ public final class NegotiateAuthenticationFilterTest {
      * Test send challenge initiate negotiate.
      */
     @Test
-    public void testSendChallengeInitiateNegotiate() {
+    void testSendChallengeInitiateNegotiate() {
 
         this.out = new byte[1];
         this.out[0] = -1;
@@ -109,7 +121,7 @@ public final class NegotiateAuthenticationFilterTest {
      * Test send challenge on failure.
      */
     @Test
-    public void testSendChallengeOnFailure() {
+    void testSendChallengeOnFailure() {
 
         this.negAuthFilter.sendChallengeOnFailure(this.response);
 

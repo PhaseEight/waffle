@@ -1,13 +1,25 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.spring;
 
@@ -58,7 +70,7 @@ public class NegotiateSecurityFilterTests {
      * Sets the up.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         final String[] configFiles = new String[] { "springTestFilterBeans.xml" };
         this.ctx = new ClassPathXmlApplicationContext(configFiles);
         SecurityContextHolder.getContext().setAuthentication(null);
@@ -69,7 +81,7 @@ public class NegotiateSecurityFilterTests {
      * Shut down.
      */
     @AfterEach
-    public void shutDown() {
+    void shutDown() {
         ((AbstractApplicationContext) this.ctx).close();
     }
 
@@ -77,7 +89,7 @@ public class NegotiateSecurityFilterTests {
      * Test filter.
      */
     @Test
-    public void testFilter() {
+    void testFilter() {
         Assertions.assertFalse(this.filter.isAllowGuestLogin());
         Assertions.assertEquals(PrincipalFormat.FQN, this.filter.getPrincipalFormat());
         Assertions.assertEquals(PrincipalFormat.BOTH, this.filter.getRoleFormat());
@@ -92,7 +104,7 @@ public class NegotiateSecurityFilterTests {
      *             the class not found exception
      */
     @Test
-    public void testProvider() throws ClassNotFoundException {
+    void testProvider() throws ClassNotFoundException {
         final SecurityFilterProviderCollection provider = this.filter.getProvider();
         Assertions.assertEquals(2, provider.size());
         Assertions.assertTrue(provider.getByClassName(
@@ -110,7 +122,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testNoChallengeGET() throws IOException, ServletException {
+    void testNoChallengeGET() throws IOException, ServletException {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.setMethod("GET");
         final SimpleHttpResponse response = new SimpleHttpResponse();
@@ -129,7 +141,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testNegotiate() throws IOException, ServletException {
+    void testNegotiate() throws IOException, ServletException {
         final String securityPackage = "Negotiate";
         final SimpleFilterChain filterChain = new SimpleFilterChain();
         final SimpleHttpRequest request = new SimpleHttpRequest();
@@ -167,7 +179,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testUnsupportedSecurityPackagePassthrough() throws IOException, ServletException {
+    void testUnsupportedSecurityPackagePassthrough() throws IOException, ServletException {
         final SimpleFilterChain filterChain = new SimpleFilterChain();
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.addHeader("Authorization", "Unsupported challenge");
@@ -186,7 +198,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testGuestIsDisabled() throws IOException, ServletException {
+    void testGuestIsDisabled() throws IOException, ServletException {
         final String securityPackage = "Negotiate";
         final SimpleFilterChain filterChain = new SimpleFilterChain();
         final SimpleHttpRequest request = new SimpleHttpRequest();
@@ -208,7 +220,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testAfterPropertiesSet() throws ServletException {
+    void testAfterPropertiesSet() throws ServletException {
         this.filter.setProvider(null);
         Assertions.assertThrows(ServletException.class, () -> {
             this.filter.afterPropertiesSet();

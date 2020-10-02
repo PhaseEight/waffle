@@ -1,18 +1,29 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.jaas;
 
 import java.security.Principal;
-import java.security.acl.Group;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -24,9 +35,7 @@ import java.util.Map;
  *
  * @author rockchip[dot]tv[at]gmail[dot]com
  */
-// TODO: Review replacement options for 'Group' as it is officially removed from jdk 14. See
-// https://bugs.openjdk.java.net/browse/JDK-8217101?attachmentOrder=desc.
-public class GroupPrincipal extends UserPrincipal implements Group {
+public class GroupPrincipal extends UserPrincipal {
 
     /** The Constant serialVersionUID. */
     private static final long serialVersionUID = 1L;
@@ -55,7 +64,6 @@ public class GroupPrincipal extends UserPrincipal implements Group {
         return this.fqn;
     }
 
-    @Override
     public boolean addMember(final Principal user) {
         final boolean isMember = this.members.containsKey(user);
         if (!isMember) {
@@ -64,14 +72,13 @@ public class GroupPrincipal extends UserPrincipal implements Group {
         return isMember;
     }
 
-    @Override
     public boolean isMember(final Principal user) {
         boolean isMember = this.members.containsKey(user);
         if (!isMember) {
             final Collection<Principal> values = this.members.values();
             for (final Principal principal : values) {
-                if (principal instanceof Group) {
-                    final Group group = (Group) principal;
+                if (principal instanceof GroupPrincipal) {
+                    final GroupPrincipal group = (GroupPrincipal) principal;
                     isMember = group.isMember(user);
                     if (isMember) {
                         break;
@@ -82,12 +89,10 @@ public class GroupPrincipal extends UserPrincipal implements Group {
         return isMember;
     }
 
-    @Override
     public Enumeration<? extends Principal> members() {
         return Collections.enumeration(this.members.values());
     }
 
-    @Override
     public boolean removeMember(final Principal user) {
         final Object prev = this.members.remove(user);
         return prev != null;

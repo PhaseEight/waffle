@@ -1,15 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Waffle (https://github.com/Waffle/waffle)
+    MIT License
 
-    Copyright (c) 2010-2020 Application Security, Inc.
+    Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
 
-    All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
-    Public License v1.0 which accompanies this distribution, and is available at
-    https://www.eclipse.org/legal/epl-v10.html.
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
 
-    Contributors: Application Security, Inc.
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -30,7 +42,7 @@
     </organization>
     <licenses>
         <license>
-            <name>Eclipse Public License</name>
+            <name>MIT</name>
             <url>https://raw.github.com/Waffle/waffle/master/LICENSE</url>
             <distribution>repo</distribution>
         </license>
@@ -149,15 +161,15 @@
         <checkstyle.config>checkstyle.xml</checkstyle.config>
 
         <!-- Third Party Versions -->
-        <assertj.version>3.16.1</assertj.version>
+        <assertj.version>3.17.2</assertj.version>
         <commons-math.version>3.6.1</commons-math.version>
         <error-prone.version>2.4.0</error-prone.version>
         <j2objc.version>1.3</j2objc.version>
-        <jmh.version>1.25</jmh.version>
+        <jmh.version>1.25.2</jmh.version>
         <jmockit.version>1.49</jmockit.version>
         <jopt-simple.version>5.0.4</jopt-simple.version>
         <jsr305.version>3.0.2</jsr305.version>
-        <junit.version>5.6.2</junit.version>
+        <junit.version>5.7.0</junit.version>
         <slf4j.version>2.0.0-alpha1</slf4j.version>
 
         <!-- Signature Settings -->
@@ -176,31 +188,31 @@
         <compiler.plugin>3.8.1</compiler.plugin>
         <coveralls.plugin>4.3.0</coveralls.plugin>
         <dependency.plugin>3.1.2</dependency.plugin>
-        <dependency-check.plugin>5.3.2</dependency-check.plugin>
+        <dependency-check.plugin>6.0.2</dependency-check.plugin>
         <deploy.plugin>3.0.0-M1</deploy.plugin>
         <directory.plugin>0.3.1</directory.plugin>
         <enforcer.plugin>3.0.0-M3</enforcer.plugin>
-        <formatter.plugin>2.12.1</formatter.plugin>
+        <formatter.plugin>2.12.2</formatter.plugin>
         <git-commit-id.plugin>4.0.2</git-commit-id.plugin>
         <gpg.plugin>1.6</gpg.plugin>
         <htmlcompressor.plugin>1.5.2</htmlcompressor.plugin>
         <impsort.plugin>1.4.1</impsort.plugin>
         <install.plugin>3.0.0-M1</install.plugin>
-        <jacoco.plugin>0.8.5</jacoco.plugin>
+        <jacoco.plugin>0.8.6</jacoco.plugin>
         <jar.plugin>3.2.0</jar.plugin>
         <javadoc.plugin>3.2.0</javadoc.plugin>
         <jdepend.plugin>2.0</jdepend.plugin>
         <jxr.plugin>3.0.0</jxr.plugin>
-        <license.plugin>3.0</license.plugin>
+        <license.plugin>4.0.rc2</license.plugin>
         <modernizer.plugin>2.1.0</modernizer.plugin>
         <nexus-staging.plugin>1.6.8</nexus-staging.plugin>
         <pmd.plugin>3.13.0</pmd.plugin>
-        <project-info-reports.plugin>3.1.0</project-info-reports.plugin>
+        <project-info-reports.plugin>3.1.1</project-info-reports.plugin>
         <release.plugin>3.0.0-M1</release.plugin>
         <resources.plugin>3.2.0</resources.plugin>
         <scm.plugin>1.11.2</scm.plugin>
         <source.plugin>3.2.1</source.plugin>
-        <spotbugs.plugin>4.0.4</spotbugs.plugin>
+        <spotbugs.plugin>4.1.3</spotbugs.plugin>
         <site.plugin>3.9.1</site.plugin>
         <sonar.plugin>3.7.0.1746</sonar.plugin>
         <surefire.plugin>3.0.0-M5</surefire.plugin>
@@ -214,14 +226,14 @@
         <!-- Plugin Dependency Versions -->
         <bug-pattern.version>1.5.0</bug-pattern.version>
         <build-tools.version>1.2.4</build-tools.version>
-        <checkstyle.version>8.35</checkstyle.version>
+        <checkstyle.version>8.36.2</checkstyle.version>
         <doxia.version>1.9.1</doxia.version>
         <sb-contrib.version>7.4.7</sb-contrib.version>
         <findsecbugs.version>1.10.1</findsecbugs.version>
         <fluido.version>1.9</fluido.version>
         <htmlcompressor.version>1.7.1</htmlcompressor.version>
         <javac.version>9+181-r4173-1</javac.version>
-        <jgit.version>5.8.1.202007141445-r</jgit.version>
+        <jgit.version>5.9.0.202009080501-r</jgit.version>
         <wagon-git.version note="Do not upgrade to 2.0.4 with ssh as it is broken">2.0.3</wagon-git.version>
         <wagon-ssh.version>3.4.0</wagon-ssh.version>
         <yuicompressor.version>2.4.8</yuicompressor.version>
@@ -680,17 +692,17 @@
                     <artifactId>license-maven-plugin</artifactId>
                     <version>${license.plugin}</version>
                     <configuration>
-                        <header>${main.basedir}/LICENSE_HEADER</header>
-                        <excludes>
-                            <exclude>.factorypath</exclude>
-                            <exclude>.gitattributes</exclude>
-                            <exclude>LICENSE_HEADER</exclude>
-                            <exclude>**/spring.factories</exclude>
-                            <exclude>**/spring.provides</exclude>
-                        </excludes>
+                        <licenseSets>
+                            <licenseSet>
+                                <header>${main.basedir}/LICENSE_HEADER</header>
+                                <excludes>
+                                    <exclude>**/spring.factories</exclude>
+                                    <exclude>**/spring.provides</exclude>
+                                </excludes>
+                            </licenseSet>
+                        </licenseSets>
                         <mapping>
                             <conf>DOUBLESLASH_STYLE</conf>
-                            <java>SLASHSTAR_STYLE</java>
                             <policy>DOUBLESLASH_STYLE</policy>
                         </mapping>
                     </configuration>

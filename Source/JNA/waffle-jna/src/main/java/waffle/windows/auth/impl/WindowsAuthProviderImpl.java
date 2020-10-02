@@ -1,18 +1,28 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.windows.auth.impl;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sun.jna.platform.win32.Advapi32;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Netapi32Util;
@@ -31,8 +41,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
+import waffle.util.cache.Cache;
 import waffle.windows.auth.IWindowsAccount;
 import waffle.windows.auth.IWindowsAuthProvider;
 import waffle.windows.auth.IWindowsComputer;
@@ -92,8 +102,7 @@ public class WindowsAuthProviderImpl implements IWindowsAuthProvider {
      *            Timeout for security contexts in seconds.
      */
     public WindowsAuthProviderImpl(final int continueContextsTimeout) {
-        this.continueContexts = Caffeine.newBuilder().expireAfterWrite(continueContextsTimeout, TimeUnit.SECONDS)
-                .build();
+        this.continueContexts = Cache.newCache(continueContextsTimeout);
     }
 
     @Override
@@ -107,7 +116,7 @@ public class WindowsAuthProviderImpl implements IWindowsAuthProvider {
 
         CtxtHandle continueHandle = null;
         IWindowsCredentialsHandle serverCredential;
-        ContinueContext continueContext = this.continueContexts.asMap().get(connectionId);
+        ContinueContext continueContext = this.continueContexts.get(connectionId);
         if (continueContext != null) {
             continueHandle = continueContext.continueHandle;
             serverCredential = continueContext.serverCredential;
@@ -225,7 +234,7 @@ public class WindowsAuthProviderImpl implements IWindowsAuthProvider {
 
     @Override
     public void resetSecurityToken(final String connectionId) {
-        this.continueContexts.asMap().remove(connectionId);
+        this.continueContexts.remove(connectionId);
     }
 
     /**
@@ -234,6 +243,6 @@ public class WindowsAuthProviderImpl implements IWindowsAuthProvider {
      * @return Number of elements in the hash map.
      */
     public int getContinueContextsSize() {
-        return this.continueContexts.asMap().size();
+        return this.continueContexts.size();
     }
 }

@@ -1,13 +1,25 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.windows.auth;
 
@@ -54,7 +66,7 @@ public class WindowsAuthProviderTests {
     // TODO This was commented out, uncommented and ignore until I can determine if this is valid
     @Disabled
     @Test
-    public void testLogonGuestUser() {
+    void testLogonGuestUser() {
         final IWindowsAuthProvider prov = new WindowsAuthProviderImpl();
         final IWindowsIdentity identity = prov.logonUser("garbage", "garbage");
         WindowsAuthProviderTests.LOGGER.info("Fqn: {}", identity.getFqn());
@@ -68,7 +80,7 @@ public class WindowsAuthProviderTests {
      * Test logon user.
      */
     @Test
-    public void testLogonUser() {
+    void testLogonUser() {
         final LMAccess.USER_INFO_1 userInfo = new LMAccess.USER_INFO_1();
         userInfo.usri1_name = new WString("WaffleTestUser").toString();
         userInfo.usri1_password = new WString("!WAFFLEP$$Wrd0").toString();
@@ -92,7 +104,7 @@ public class WindowsAuthProviderTests {
      * Test impersonate logged on user.
      */
     @Test
-    public void testImpersonateLoggedOnUser() {
+    void testImpersonateLoggedOnUser() {
         final LMAccess.USER_INFO_1 userInfo = new LMAccess.USER_INFO_1();
         userInfo.usri1_name = new WString(MockWindowsAccount.TEST_USER_NAME).toString();
         userInfo.usri1_password = new WString(MockWindowsAccount.TEST_PASSWORD).toString();
@@ -118,7 +130,7 @@ public class WindowsAuthProviderTests {
      * Test get current computer.
      */
     @Test
-    public void testGetCurrentComputer() {
+    void testGetCurrentComputer() {
         final IWindowsAuthProvider prov = new WindowsAuthProviderImpl();
         final IWindowsComputer computer = prov.getCurrentComputer();
         WindowsAuthProviderTests.LOGGER.info(computer.getComputerName());
@@ -137,7 +149,7 @@ public class WindowsAuthProviderTests {
      * Test get domains.
      */
     @Test
-    public void testGetDomains() {
+    void testGetDomains() {
         if (Netapi32Util.getJoinStatus() != LMJoin.NETSETUP_JOIN_STATUS.NetSetupDomainName) {
             return;
         }
@@ -154,7 +166,7 @@ public class WindowsAuthProviderTests {
      * Test accept security token.
      */
     @Test
-    public void testAcceptSecurityToken() {
+    void testAcceptSecurityToken() {
         final String securityPackage = "Negotiate";
         final String targetName = "localhost";
         IWindowsCredentialsHandle clientCredentials = null;
@@ -216,7 +228,7 @@ public class WindowsAuthProviderTests {
      *             the interrupted exception
      */
     @Test
-    public void testSecurityContextsExpire() throws InterruptedException {
+    void testSecurityContextsExpire() throws InterruptedException {
         final String securityPackage = "Negotiate";
         IWindowsCredentialsHandle clientCredentials = null;
         WindowsSecurityContextImpl clientContext = null;
@@ -260,7 +272,7 @@ public class WindowsAuthProviderTests {
      * Test accept and impersonate security token.
      */
     @Test
-    public void testAcceptAndImpersonateSecurityToken() {
+    void testAcceptAndImpersonateSecurityToken() {
         final String securityPackage = "Negotiate";
         final String targetName = "localhost";
         IWindowsCredentialsHandle clientCredentials = null;

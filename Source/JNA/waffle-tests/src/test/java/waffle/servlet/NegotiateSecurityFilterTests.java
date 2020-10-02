@@ -1,13 +1,25 @@
 /*
- * Waffle (https://github.com/Waffle/waffle)
+ * MIT License
  *
- * Copyright (c) 2010-2020 Application Security, Inc.
+ * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Contributors: Application Security, Inc.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package waffle.servlet;
 
@@ -67,7 +79,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @BeforeEach
-    public void setUp() throws ServletException {
+    void setUp() throws ServletException {
         this.filter = new NegotiateSecurityFilter();
         this.filter.setAuth(new WindowsAuthProviderImpl());
         this.filter.init(null);
@@ -77,7 +89,7 @@ public class NegotiateSecurityFilterTests {
      * Tear down.
      */
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         this.filter.destroy();
     }
 
@@ -90,7 +102,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testChallengeGET() throws IOException, ServletException {
+    void testChallengeGET() throws IOException, ServletException {
         final SimpleHttpRequest request = new SimpleHttpRequest();
         request.setMethod("GET");
         final SimpleHttpResponse response = new SimpleHttpResponse();
@@ -114,7 +126,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testChallengePOST() throws IOException, ServletException {
+    void testChallengePOST() throws IOException, ServletException {
         final String securityPackage = NegotiateSecurityFilterTests.NEGOTIATE;
         IWindowsCredentialsHandle clientCredentials = null;
         WindowsSecurityContextImpl clientContext = null;
@@ -158,7 +170,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testNegotiate() throws IOException, ServletException {
+    void testNegotiate() throws IOException, ServletException {
         final String securityPackage = NegotiateSecurityFilterTests.NEGOTIATE;
         // client credentials handle
         IWindowsCredentialsHandle clientCredentials = null;
@@ -237,7 +249,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testNegotiatePreviousAuthWithWindowsPrincipal() throws IOException, ServletException {
+    void testNegotiatePreviousAuthWithWindowsPrincipal() throws IOException, ServletException {
         final MockWindowsIdentity mockWindowsIdentity = new MockWindowsIdentity("user", new ArrayList<String>());
         final SimpleHttpRequest request = new SimpleHttpRequest();
         final WindowsPrincipal windowsPrincipal = new WindowsPrincipal(mockWindowsIdentity);
@@ -260,7 +272,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testChallengeNTLMPOST() throws IOException, ServletException {
+    void testChallengeNTLMPOST() throws IOException, ServletException {
         final MockWindowsIdentity mockWindowsIdentity = new MockWindowsIdentity("user", new ArrayList<String>());
         final SimpleHttpRequest request = new SimpleHttpRequest();
         final WindowsPrincipal windowsPrincipal = new WindowsPrincipal(mockWindowsIdentity);
@@ -289,7 +301,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testChallengeNTLMPUT() throws IOException, ServletException {
+    void testChallengeNTLMPUT() throws IOException, ServletException {
         final MockWindowsIdentity mockWindowsIdentity = new MockWindowsIdentity("user", new ArrayList<String>());
         final SimpleHttpRequest request = new SimpleHttpRequest();
         final WindowsPrincipal windowsPrincipal = new WindowsPrincipal(mockWindowsIdentity);
@@ -316,12 +328,12 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testInitBasicSecurityFilterProvider() throws ServletException {
+    void testInitBasicSecurityFilterProvider() throws ServletException {
         final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
         filterConfig.setParameter("principalFormat", "sid");
         filterConfig.setParameter("roleFormat", "none");
         filterConfig.setParameter("allowGuestLogin", "true");
-        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider\n");
+        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
         this.filter.init(filterConfig);
@@ -339,7 +351,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testInitTwoSecurityFilterProviders() throws ServletException {
+    void testInitTwoSecurityFilterProviders() throws ServletException {
         // make sure that providers can be specified separated by any kind of space
         final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider\n"
@@ -355,9 +367,9 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testInitNegotiateSecurityFilterProvider() throws ServletException {
+    void testInitNegotiateSecurityFilterProvider() throws ServletException {
         final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
-        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.NegotiateSecurityFilterProvider\n");
+        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.NegotiateSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.NegotiateSecurityFilterProvider/protocols",
                 "NTLM\nNegotiate NTLM");
         this.filter.init(filterConfig);
@@ -371,9 +383,9 @@ public class NegotiateSecurityFilterTests {
      * Test init negotiate security filter provider invalid protocol.
      */
     @Test
-    public void testInitNegotiateSecurityFilterProviderInvalidProtocol() {
+    void testInitNegotiateSecurityFilterProviderInvalidProtocol() {
         final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
-        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.NegotiateSecurityFilterProvider\n");
+        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.NegotiateSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.NegotiateSecurityFilterProvider/protocols", "INVALID");
         try {
             this.filter.init(filterConfig);
@@ -387,7 +399,7 @@ public class NegotiateSecurityFilterTests {
      * Test init invalid parameter.
      */
     @Test
-    public void testInitInvalidParameter() {
+    void testInitInvalidParameter() {
         try {
             final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
             filterConfig.setParameter("invalidParameter", "random");
@@ -402,7 +414,7 @@ public class NegotiateSecurityFilterTests {
      * Test init invalid class in parameter.
      */
     @Test
-    public void testInitInvalidClassInParameter() {
+    void testInitInvalidClassInParameter() {
         try {
             final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
             filterConfig.setParameter("invalidClass/invalidParameter", "random");
