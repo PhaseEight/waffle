@@ -79,6 +79,9 @@ public class NegotiateSecurityFilter extends GenericFilterBean {
     /** The default granted authority. */
     private GrantedAuthority defaultGrantedAuthority = WindowsAuthenticationToken.DEFAULT_GRANTED_AUTHORITY;
 
+    /** The enable filter flag. This will not not do any Windows Authentication */
+    private boolean enabled = true;
+
     /**
      * Instantiates a new negotiate security filter.
      */
@@ -93,6 +96,11 @@ public class NegotiateSecurityFilter extends GenericFilterBean {
 
         final HttpServletRequest request = (HttpServletRequest) req;
         final HttpServletResponse response = (HttpServletResponse) res;
+
+        if (!this.isEnabled()) {
+            NegotiateSecurityFilter.LOGGER.trace("{} {}", "This filter is disabled", this.isEnabled());
+            chain.doFilter(request, response);
+        }
 
         NegotiateSecurityFilter.LOGGER.debug("{} {}, contentlength: {}", request.getMethod(), request.getRequestURI(),
                 Integer.valueOf(request.getContentLength()));
@@ -364,5 +372,24 @@ public class NegotiateSecurityFilter extends GenericFilterBean {
      */
     public void setDefaultGrantedAuthority(final GrantedAuthority value) {
         this.defaultGrantedAuthority = value;
+    }
+
+    /**
+     * Gets whether the filter is enabled.
+     *
+     * @return whether the filter is enabled or not
+     */
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    /**
+     * Sets whether the filter is enabled.
+     *
+     * @param enabled
+     *            the new provider
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

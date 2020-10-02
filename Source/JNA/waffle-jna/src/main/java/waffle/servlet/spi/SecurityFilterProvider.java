@@ -37,6 +37,9 @@ import waffle.windows.auth.IWindowsIdentity;
  */
 public interface SecurityFilterProvider {
 
+    /** The Constant WWW_AUTHENTICATE. */
+    String WWW_AUTHENTICATE = "WWW-Authenticate";
+
     /**
      * Add authentication method headers.
      *

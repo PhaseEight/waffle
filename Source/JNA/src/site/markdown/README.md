@@ -6,7 +6,7 @@ WAFFLE - Windows Authentication Framework
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/2775/badge.svg)](https://scan.coverity.com/projects/2775)
 [![Coverage Status](https://coveralls.io/repos/hazendaz/waffle/badge.svg)](https://coveralls.io/r/hazendaz/waffle)
 [![Maven central](https://maven-badges.herokuapp.com/maven-central/com.github.waffle/waffle-jna/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.waffle/waffle-jna)
-[![releases](http://github-release-version.herokuapp.com/github/Waffle/waffle/release.svg?style=flat)](https://github.com/Waffle/waffle/releases/tag/waffle-1.9.0)
+[![releases](http://github-release-version.herokuapp.com/github/Waffle/waffle/release.svg?style=flat)](https://github.com/Waffle/waffle/releases/tag/waffle-2.2.0)
 [![Eclipse](https://img.shields.io/badge/license-Eclipse-blue.svg)](https://www.eclipse.org/legal/epl-v10.html)
 [![Project Stats](https://www.openhub.net/p/waffle/widgets/project_thin_badge.gif)](https://www.openhub.net/p/waffle)
 [![Github All Releases](https://img.shields.io/github/downloads/Waffle/waffle/total.svg)]()
@@ -21,7 +21,7 @@ Sites
 -----
 
 * [Site Page](https://waffle.github.io/waffle/)
-* [sonarqube-java](https://sonarqube.com/dashboard?id=com.github.waffle%3Awaffle-parent)
+* [sonarqube-java](https://sonarcloud.io/dashboard?id=Waffle_waffle)
 * [sonarqube-.net](https://sonarqube.com/dashboard/index?id=waffle)
 
 Essentials
@@ -63,6 +63,13 @@ Features
 * Supports all functions required for implementing server-side single-signon with Negotiate and NTLM and various implementations for Java web servers.
 * Supports Windows Identity impersonation.
 * Includes a Windows Installer Merge Module for distribution of C# binaries.
+
+How do I resolve JNA `NoClassDefFound` errors?
+----------------------------------------------
+WAFFLE uses the latest version of JNA, which may conflict with other dependencies your project (or its parent) includes. If you experience issues with `NoClassDefFound` errors for JNA artifacts, consider one or more of the following steps to resolve the conflict:
+* Listing WAFFLE earlier (or first) in your dependency list 
+* Specifying the most recent version of JNA as a dependency
+* If you are using a parent (e.g., Spring Boot) that includes JNA as a dependency, override the `jna.version` property
 
 Related and Similar Products
 ----------------------------

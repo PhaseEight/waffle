@@ -137,6 +137,13 @@ public class SecurityFilterProviderCollection {
         return null;
     }
 
+    public SecurityFilterProvider get(final int pos) {
+        if (providers == null) {
+            return null;
+        }
+        return providers.get(pos);
+    }
+
     /**
      * Filter.
      *

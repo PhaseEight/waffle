@@ -23,9 +23,12 @@
  */
 package waffle.servlet.spi;
 
-import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,6 +53,20 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     /** The realm. */
     private String realm = "BasicSecurityFilterProvider";
 
+    private Charset charset = StandardCharsets.UTF_8;
+
+    public static List<Charset> SupportedCharsets = new ArrayList<Charset>() {
+
+        /** The Constant serialVersionUID. */
+        private static final long serialVersionUID = 1L;
+
+        {
+            this.add(StandardCharsets.UTF_8);
+            this.add(StandardCharsets.US_ASCII);
+        }
+
+    };
+
     /** The auth. */
     private final IWindowsAuthProvider auth;
 
@@ -64,11 +81,10 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     }
 
     @Override
-    public IWindowsIdentity doFilter(final HttpServletRequest request, final HttpServletResponse response)
-            throws IOException {
+    public IWindowsIdentity doFilter(final HttpServletRequest request, final HttpServletResponse response) {
 
         final AuthorizationHeader authorizationHeader = new AuthorizationHeader(request);
-        final String usernamePassword = new String(authorizationHeader.getTokenBytes(), StandardCharsets.UTF_8);
+        final String usernamePassword = new String(authorizationHeader.getTokenBytes(), charset);
         final String[] usernamePasswordArray = usernamePassword.split(":", 2);
         if (usernamePasswordArray.length != 2) {
             throw new RuntimeException("Invalid username:password in Authorization header.");
@@ -88,8 +104,15 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
     }
 
     @Override
+    /**
+     * some user agents might not work correctly if they see the , charset parameter after realm
+     */
     public void sendUnauthorized(final HttpServletResponse response) {
-        response.addHeader("WWW-Authenticate", "Basic realm=\"" + this.realm + "\"");
+        String challenge = "Basic realm=\"" + this.realm + "\"";
+        if (charset != null) {
+            challenge = challenge + ", charset=\"" + charset.name() + "\"";
+        }
+        response.addHeader(SecurityFilterProvider.WWW_AUTHENTICATE, challenge);
     }
 
     /**
@@ -121,10 +144,35 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
      */
     @Override
     public void initParameter(final String parameterName, final String parameterValue) {
-        if ("realm".equals(parameterName)) {
-            this.setRealm(parameterValue);
-        } else {
-            throw new InvalidParameterException(parameterName);
+
+        switch (parameterName) {
+            case "realm":
+                this.setRealm(parameterValue);
+                break;
+            case "charset":
+                this.setCharset(parameterValue);
+                break;
+            default:
+                throw new InvalidParameterException(parameterName);
+        }
+    }
+
+    private void setCharset(String charsetName) throws UnsupportedCharsetException {
+        if ("".equals(charsetName)) {
+            this.charset = null;
+            return;
+        }
+        try {
+            Charset charset = Charset.forName(charsetName);
+            if (BasicSecurityFilterProvider.SupportedCharsets.contains(charset)) {
+                this.charset = charset;
+            } else {
+                throw new java.nio.charset.UnsupportedCharsetException(
+                        "Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII");
+            }
+        } catch (UnsupportedCharsetException uce) {
+            throw new java.nio.charset.UnsupportedCharsetException(
+                    "Unsupported value for charset. Use an empty string, or UTF-8 or US-ASCII");
         }
     }
 }

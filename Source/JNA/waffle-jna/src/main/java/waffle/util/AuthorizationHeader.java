@@ -77,7 +77,7 @@ public class AuthorizationHeader {
      *
      * Authorization: NTLM the_token Authorization: Negotiate the_token Authorization: Bearer the_token
      *
-     * @return AuthenticationScheme as SecurityPackage e.g. Negotiate, NTLM, Bearer.
+     * @return AuthenticationScheme as SecurityPackage e.g. Negotiate, NTLM, Bearer, Basic
      */
     public String getSecurityPackage() {
         final String header = this.getHeader();
@@ -141,6 +141,24 @@ public class AuthorizationHeader {
     }
 
     /**
+     * Checks if is ntlm type3 message.
+     *
+     * @return true, if is ntlm type3 message
+     */
+    public boolean isNtlmType3Message() {
+        if (this.isNull()) {
+            return false;
+        }
+
+        final byte[] tokenBytes = this.getTokenBytes();
+        if (!NtlmMessage.isNtlmMessage(tokenBytes)) {
+            return false;
+        }
+
+        return 3 == NtlmMessage.getMessageType(tokenBytes);
+    }
+
+    /**
      * Checks if is SP nego message.
      *
      * @return true, if is SP nego message that contains NegTokenInit
@@ -153,6 +171,23 @@ public class AuthorizationHeader {
 
         final byte[] tokenBytes = this.getTokenBytes();
         return SPNegoMessage.isNegTokenInit(tokenBytes);
+    }
+
+    /**
+     * Checks if is SP nego message.
+     *
+     * @see <a href=
+     *      "https://msdn.microsoft.com/en-us/library/ms995330.aspx">https://msdn.microsoft.com/en-us/library/ms995330.aspx</a>
+     *
+     * @return true, if is SP nego message contains NegTokenTarg
+     */
+    public boolean isSPNegTokenArgMessage() {
+
+        if (this.isNull()) {
+            return false;
+        }
+        final byte[] tokenBytes = this.getTokenBytes();
+        return SPNegoMessage.isNegTokenArg(tokenBytes);
     }
 
     /**
@@ -180,7 +215,28 @@ public class AuthorizationHeader {
         if (this.isNull()) {
             return false;
         }
-
         return this.getSecurityPackage().toUpperCase(Locale.ENGLISH).equalsIgnoreCase("BEARER");
     }
+
+    public boolean isBasicAuthorizationHeader() {
+        if (this.isNull()) {
+            return false;
+        }
+
+        return this.getSecurityPackage().toUpperCase(Locale.ENGLISH).equalsIgnoreCase("BASIC");
+    }
+
+    /**
+     *
+     * @return true if Authorization Header Authentication Scheme is Basic or NTLM Type2 Message or Negotiate and
+     */
+    public boolean isLogonAttempt() {
+        if (this.isBasicAuthorizationHeader() || this.isSPNegTokenArgMessage() || this.isNtlmType3Message()
+                || this.isBasicAuthorizationHeader()) {
+            return true;
+        }
+
+        return false;
+    }
+
 }

@@ -23,6 +23,10 @@
  */
 package waffle.servlet;
 
+import static javax.servlet.http.HttpServletResponse.*;
+
+import com.sun.jna.Platform;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
@@ -33,12 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.security.auth.Subject;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -46,8 +45,7 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import waffle.servlet.spi.SecurityFilterProvider;
-import waffle.servlet.spi.SecurityFilterProviderCollection;
+import waffle.servlet.spi.*;
 import waffle.util.AuthorizationHeader;
 import waffle.util.CorsPreFlightCheck;
 import waffle.windows.auth.IWindowsAuthProvider;
@@ -59,18 +57,25 @@ import waffle.windows.auth.impl.WindowsAuthProviderImpl;
 /**
  * A Negotiate (NTLM/Kerberos) Security Filter.
  *
- * @author dblock[at]dblock[dot]org
+ * Basic Authentication failures result in 403 Forbidden HTTP Status
+ * 
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication">https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication</a>
+ *      <a href="https://tools.ietf.org/html/rfc7617">https://tools.ietf.org/html/rfc7617</a>
+ *      <a href="https://tools.ietf.org/html/rfc7235">https://tools.ietf.org/html/rfc7235</a>
+ *
+ *
+ * @author dblock[at]dblock[dot]org*
  */
 public class NegotiateSecurityFilter implements Filter {
 
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(NegotiateSecurityFilter.class);
+    private static final Logger AUTHENTICATION_LOGGER = LoggerFactory
+            .getLogger(NegotiateSecurityFilter.class.getCanonicalName() + ".authentication");
 
     /** The Constant PRINCIPALSESSIONKEY. */
     private static final String PRINCIPALSESSIONKEY = NegotiateSecurityFilter.class.getName() + ".PRINCIPAL";
-
-    /** The windows flag. */
-    private static Boolean windows;
 
     /** The principal format. */
     private PrincipalFormat principalFormat = PrincipalFormat.FQN;
@@ -87,20 +92,22 @@ public class NegotiateSecurityFilter implements Filter {
     /** The exclusion filter. */
     private String[] excludePatterns;
 
-    /** The allow guest login. */
+    /** The allow guest login flag. */
     private boolean allowGuestLogin = true;
 
-    /** The impersonate. */
+    /** The impersonate flag. */
     private boolean impersonate;
 
-    /** The exclusion bearer authorization. */
+    /** The exclusion for bearer authorization flag. */
     private boolean excludeBearerAuthorization;
 
-    /** The exclusions cors pre flight. */
+    /** The exclusions for cors pre flight flag. */
     private boolean excludeCorsPreflight;
 
-    /** The disable SSO. */
-    private boolean disableSSO;
+    /** The enable filter flag. This will not not do any Windows Authentication */
+    private boolean enabled = true;
+
+    private AccessDeniedStrategy accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
 
     /**
      * Instantiates a new negotiate security filter.
@@ -121,19 +128,19 @@ public class NegotiateSecurityFilter implements Filter {
         final HttpServletRequest request = (HttpServletRequest) sreq;
         final HttpServletResponse response = (HttpServletResponse) sres;
 
-        NegotiateSecurityFilter.LOGGER.debug("{} {}, contentlength: {}", request.getMethod(), request.getRequestURI(),
+        NegotiateSecurityFilter.LOGGER.info("{} {}, contentlength: {}", request.getMethod(), request.getRequestURI(),
                 Integer.valueOf(request.getContentLength()));
 
         // If we are not in a windows environment, resume filter chain
-        if (!NegotiateSecurityFilter.isWindows()) {
-            NegotiateSecurityFilter.LOGGER.debug("Running in a non windows environment, SSO skipped");
+        if (!Platform.isWindows()) {
+            NegotiateSecurityFilter.LOGGER.info("Running in a non windows environment, SSO skipped");
             chain.doFilter(request, response);
             return;
         }
 
-        // If sso is disabled, resume filter chain
-        if (this.disableSSO) {
-            NegotiateSecurityFilter.LOGGER.debug("SSO is disabled, resuming filter chain");
+        // If this filter is disabled resume filter chain
+        if (!this.enabled) {
+            NegotiateSecurityFilter.LOGGER.info("filter disabled, resuming filter chain");
             chain.doFilter(request, response);
             return;
         }
@@ -151,8 +158,8 @@ public class NegotiateSecurityFilter implements Filter {
         }
 
         // If exclude cores pre-flight and is pre flight, resume the filter chain
-        if (this.excludeCorsPreflight && CorsPreFlightCheck.isPreflight(request)) {
-            NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] CORS preflight");
+        if (this.isExcludeCorsPreflight() && CorsPreFlightCheck.isPreflight(request)) {
+            NegotiateSecurityFilter.LOGGER.info("[waffle.servlet.NegotiateSecurityFilter] CORS preflight");
             chain.doFilter(sreq, sres);
             return;
         }
@@ -160,8 +167,8 @@ public class NegotiateSecurityFilter implements Filter {
         final AuthorizationHeader authorizationHeader = new AuthorizationHeader(request);
 
         // If exclude bearer authorization and is bearer authorization, result the filter chain
-        if (this.excludeBearerAuthorization && authorizationHeader.isBearerAuthorizationHeader()) {
-            NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] Authorization: Bearer");
+        if (this.isExcludeBearerAuthorization() && authorizationHeader.isBearerAuthorizationHeader()) {
+            NegotiateSecurityFilter.LOGGER.info("[waffle.servlet.NegotiateSecurityFilter] Authorization: Bearer");
             chain.doFilter(sreq, sres);
             return;
         }
@@ -178,25 +185,28 @@ public class NegotiateSecurityFilter implements Filter {
             IWindowsIdentity windowsIdentity;
             try {
                 windowsIdentity = this.providers.doFilter(request, response);
+                // standard behaviour for NTLM and Negotiate if the Providers have set WWW-Authenticate
                 if (windowsIdentity == null) {
                     return;
                 }
             } catch (final IOException e) {
-                NegotiateSecurityFilter.LOGGER.warn("error logging in user: {}", e.getMessage());
+                NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("error logging in user using Auth Scheme [{}]: {}",
+                        authorizationHeader.getSecurityPackage(), e.getMessage());
+                this.accessDenied(authorizationHeader, providers, response);
                 NegotiateSecurityFilter.LOGGER.trace("", e);
-                this.sendUnauthorized(response, true);
                 return;
             }
 
             IWindowsImpersonationContext ctx = null;
             try {
                 if (!this.allowGuestLogin && windowsIdentity.isGuest()) {
-                    NegotiateSecurityFilter.LOGGER.warn("guest login disabled: {}", windowsIdentity.getFqn());
-                    this.sendUnauthorized(response, true);
+                    NegotiateSecurityFilter.AUTHENTICATION_LOGGER.warn("guest login disabled: {}",
+                            windowsIdentity.getFqn());
+                    this.accessDenied(authorizationHeader, providers, response);
                     return;
                 }
 
-                NegotiateSecurityFilter.LOGGER.debug("logged in user: {} ({})", windowsIdentity.getFqn(),
+                NegotiateSecurityFilter.AUTHENTICATION_LOGGER.info("logged in user: {} ({})", windowsIdentity.getFqn(),
                         windowsIdentity.getSidString());
 
                 final HttpSession session = request.getSession(true);
@@ -217,25 +227,26 @@ public class NegotiateSecurityFilter implements Filter {
                     windowsPrincipal = new WindowsPrincipal(windowsIdentity, this.principalFormat, this.roleFormat);
                 }
 
-                NegotiateSecurityFilter.LOGGER.debug("roles: {}", windowsPrincipal.getRolesString());
+                NegotiateSecurityFilter.LOGGER.info("roles: {}", windowsPrincipal.getRolesString());
                 subject.getPrincipals().add(windowsPrincipal);
                 request.getSession(false).setAttribute("javax.security.auth.subject", subject);
 
-                NegotiateSecurityFilter.LOGGER.info("successfully logged in user: {}", windowsIdentity.getFqn());
+                NegotiateSecurityFilter.AUTHENTICATION_LOGGER.info("successfully logged in user: {}",
+                        windowsIdentity.getFqn());
 
                 request.getSession(false).setAttribute(NegotiateSecurityFilter.PRINCIPALSESSIONKEY, windowsPrincipal);
 
                 final NegotiateRequestWrapper requestWrapper = new NegotiateRequestWrapper(request, windowsPrincipal);
 
                 if (this.impersonate) {
-                    NegotiateSecurityFilter.LOGGER.debug("impersonating user");
+                    NegotiateSecurityFilter.LOGGER.info("impersonating user");
                     ctx = windowsIdentity.impersonate();
                 }
 
                 chain.doFilter(requestWrapper, response);
             } finally {
                 if (this.impersonate && ctx != null) {
-                    NegotiateSecurityFilter.LOGGER.debug("terminating impersonation");
+                    NegotiateSecurityFilter.LOGGER.info("terminating impersonation");
                     ctx.revertToSelf();
                 } else {
                     windowsIdentity.dispose();
@@ -245,8 +256,8 @@ public class NegotiateSecurityFilter implements Filter {
             return;
         }
 
-        NegotiateSecurityFilter.LOGGER.debug("authorization required");
-        this.sendUnauthorized(response, false);
+        NegotiateSecurityFilter.LOGGER.info("authorization required");
+        this.accessDenied(authorizationHeader, providers, response);
     }
 
     /**
@@ -329,43 +340,53 @@ public class NegotiateSecurityFilter implements Filter {
         if (filterConfig != null) {
             final List<String> parameterNames = Collections.list(filterConfig.getInitParameterNames());
             NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] processing filterConfig");
+
             for (String parameterName : parameterNames) {
                 final String parameterValue = filterConfig.getInitParameter(parameterName);
                 NegotiateSecurityFilter.LOGGER.debug("Init Param: '{}={}'", parameterName, parameterValue);
-                switch (parameterName) {
-                    case "principalFormat":
+                InitParameter initParam = InitParameter.get(parameterName);
+                switch (initParam) {
+                    case ACCESS_DENIED_STRATEGY:
+                        this.setAccessDeniedStrategy(parameterValue);
+                        break;
+                    case LOGON_ERROR_RESPONSE_CODE:
+                        this.setAccessDeniedStrategy(Integer.parseInt(parameterValue));
+                        break;
+                    case ENABLED:
+                        this.enabled = Boolean.parseBoolean(parameterValue);
+                        break;
+                    case PRINCIPAL_FORMAT:
                         this.principalFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
                         break;
-                    case "roleFormat":
+                    case ROLE_FORMAT:
                         this.roleFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
                         break;
-                    case "allowGuestLogin":
+                    case ALLOW_GUEST_LOGIN:
                         this.allowGuestLogin = Boolean.parseBoolean(parameterValue);
                         break;
-                    case "impersonate":
+                    case IMPERSONATE:
                         this.impersonate = Boolean.parseBoolean(parameterValue);
                         break;
-                    case "securityFilterProviders":
+                    case SECURITY_FILTER_PROVIDER:
                         providerNames = parameterValue.split("\\s+", -1);
                         break;
-                    case "authProvider":
+                    case AUTH_PROVIDER:
                         authProvider = parameterValue;
                         break;
-                    case "excludePatterns":
+                    case EXCLUDE_PATTERNS:
                         this.excludePatterns = parameterValue.split("\\s+", -1);
                         break;
-                    case "excludeCorsPreflight":
-                        this.excludeCorsPreflight = Boolean.parseBoolean(parameterValue);
+                    case EXCLUDE_CORS_PREFLIGHT:
+                        this.setExcludeCorsPreflight(Boolean.parseBoolean(parameterValue));
                         break;
-                    case "excludeBearerAuthorization":
-                        this.excludeBearerAuthorization = Boolean.parseBoolean(parameterValue);
+                    case EXCLUDE_BEARER_AUTHORIZATION:
+                        this.setExcludeBearerAuthorization(Boolean.parseBoolean(parameterValue));
                         break;
-                    case "disableSSO":
-                        this.disableSSO = Boolean.parseBoolean(parameterValue);
-                        break;
-                    default:
+                    case PROVIDER_PARAMETER:
                         implParameters.put(parameterName, parameterValue);
                         break;
+                    case UNSUPPORTED:
+                        throw new ServletException(String.format("Invalid parameter: %s", parameterName));
                 }
             }
         }
@@ -426,7 +447,7 @@ public class NegotiateSecurityFilter implements Filter {
             }
         }
 
-        NegotiateSecurityFilter.LOGGER.info("[waffle.servlet.NegotiateSecurityFilter] started");
+        NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] started");
     }
 
     /**
@@ -437,7 +458,7 @@ public class NegotiateSecurityFilter implements Filter {
      */
     public void setPrincipalFormat(final String format) {
         this.principalFormat = PrincipalFormat.valueOf(format.toUpperCase(Locale.ENGLISH));
-        NegotiateSecurityFilter.LOGGER.info("principal format: {}", this.principalFormat);
+        NegotiateSecurityFilter.LOGGER.debug("principal format: {}", this.principalFormat);
     }
 
     /**
@@ -457,7 +478,6 @@ public class NegotiateSecurityFilter implements Filter {
      */
     public void setRoleFormat(final String format) {
         this.roleFormat = PrincipalFormat.valueOf(format.toUpperCase(Locale.ENGLISH));
-        NegotiateSecurityFilter.LOGGER.info("role format: {}", this.roleFormat);
     }
 
     /**
@@ -470,23 +490,15 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     /**
-     * Send a 401 Unauthorized along with protocol authentication headers.
-     *
+     * When a login attempt has failed, the accessDeniedStrategy is called
+     * 
      * @param response
      *            HTTP Response
-     * @param close
-     *            Close connection.
      */
-    private void sendUnauthorized(final HttpServletResponse response, final boolean close) {
+    private void accessDenied(final AuthorizationHeader authorizationHeader,
+            final SecurityFilterProviderCollection providers, final HttpServletResponse response) {
         try {
-            this.providers.sendUnauthorized(response);
-            if (close) {
-                response.setHeader("Connection", "close");
-            } else {
-                response.setHeader("Connection", "keep-alive");
-            }
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            response.flushBuffer();
+            accessDeniedStrategy.handle(authorizationHeader, providers, response);
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -548,11 +560,113 @@ public class NegotiateSecurityFilter implements Filter {
         return this.providers;
     }
 
-    private static boolean isWindows() {
-        if (NegotiateSecurityFilter.windows == null) {
-            NegotiateSecurityFilter.windows = System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("win");
-        }
-        return NegotiateSecurityFilter.windows.booleanValue();
+    /**
+     * Checks if must continue if Authorization Authentication Scheme is Bearer
+     *
+     * @return true if Bearer Authorization is ignored, false otherwise
+     */
+    public boolean isExcludeBearerAuthorization() {
+        return this.excludeBearerAuthorization;
     }
 
+    public void setExcludeBearerAuthorization(boolean excludeBearerAuthorization) {
+        this.excludeBearerAuthorization = excludeBearerAuthorization;
+    }
+
+    /**
+     * Checks if must continue if Authorization Authentication Scheme is Bearer
+     *
+     * @return true if Bearer Authorization is ignored, false otherwise
+     */
+    public boolean isExcludeCorsPreflight() {
+        return this.excludeCorsPreflight;
+    }
+
+    public void setExcludeCorsPreflight(boolean excludeCorsPreflight) {
+        this.excludeCorsPreflight = excludeCorsPreflight;
+    }
+
+    /**
+     * Returns the Access Denied Strategy Object
+     *
+     * @return accessDeniedStrategy
+     */
+    public AccessDeniedStrategy getAccessDeniedStrategy() {
+        return this.accessDeniedStrategy;
+    }
+
+    public void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException {
+
+        if ("SC_UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
+            this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
+        } else if ("SC_FORBIDDEN".equalsIgnoreCase(accessDeniedStrategy)) {
+            this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
+        } else {
+            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedStrategy));
+        }
+
+    }
+
+    public void setAccessDeniedStrategy(int accessDeniedStrategy) throws ServletException {
+
+        if (accessDeniedStrategy == 401) {
+            this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
+        } else if (accessDeniedStrategy == 403) {
+            this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
+        } else {
+            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedStrategy));
+        }
+
+    }
+
+    public enum InitParameter {
+        LOGON_ERROR_RESPONSE_CODE("logonErrorResponseCode"),
+        ACCESS_DENIED_STRATEGY("accessDeniedStrategy"),
+        ENABLED("enabled"),
+        PRINCIPAL_FORMAT("principalFormat"),
+        ROLE_FORMAT("roleFormat"),
+        ALLOW_GUEST_LOGIN("allowGuestLogin"),
+        IMPERSONATE("impersonate"),
+        SECURITY_FILTER_PROVIDER("securityFilterProviders"),
+        AUTH_PROVIDER("authProvider"),
+        EXCLUDE_PATTERNS("excludePatterns"),
+        EXCLUDE_CORS_PREFLIGHT("excludeCorsPreflight"),
+        EXCLUDE_BEARER_AUTHORIZATION("excludeBearerAuthorization"),
+        PROVIDER_PARAMETER("provider"),
+        UNSUPPORTED("unsupported");
+
+        private final String paramName;
+
+        public String getParamName() {
+            return this.paramName;
+        }
+
+        public String toString() {
+            return this.getParamName();
+        }
+
+        InitParameter(String name) {
+            this.paramName = name;
+        }
+
+        private static final Map<String, InitParameter> lookup = new HashMap();
+        static {
+            // Create reverse lookup hash map
+            for (InitParameter ip : InitParameter.values())
+                lookup.put(ip.getParamName(), ip);
+        }
+
+        public static InitParameter get(String paramName) {
+            // the reverse lookup by simply getting
+            // the value from the lookup HashMap.
+            InitParameter parameter = lookup.get(paramName);
+            if (parameter == null && paramName.indexOf("/") > 0) {
+                parameter = PROVIDER_PARAMETER;
+            }
+            if (parameter == null) {
+                parameter = UNSUPPORTED;
+            }
+            return parameter;
+        }
+    }
 }

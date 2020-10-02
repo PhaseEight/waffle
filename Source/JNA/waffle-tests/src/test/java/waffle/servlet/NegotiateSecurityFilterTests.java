@@ -24,6 +24,7 @@
 package waffle.servlet;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static waffle.servlet.NegotiateSecurityFilter.InitParameter.*;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.Secur32.EXTENDED_NAME_FORMAT;
@@ -32,11 +33,20 @@ import com.sun.jna.platform.win32.Sspi;
 import com.sun.jna.platform.win32.SspiUtil.ManagedSecBufferDesc;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Base64;
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import javax.security.auth.Subject;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.Verifications;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -49,6 +59,10 @@ import waffle.mock.http.SimpleFilterChain;
 import waffle.mock.http.SimpleFilterConfig;
 import waffle.mock.http.SimpleHttpRequest;
 import waffle.mock.http.SimpleHttpResponse;
+import waffle.servlet.spi.ForbiddenAccessDeniedStrategy;
+import waffle.servlet.spi.SecurityFilterProvider;
+import waffle.servlet.spi.UnauthorizedAccessDeniedStrategy;
+import waffle.util.CorsPreFlightCheck;
 import waffle.windows.auth.IWindowsCredentialsHandle;
 import waffle.windows.auth.PrincipalFormat;
 import waffle.windows.auth.impl.WindowsAccountImpl;
@@ -200,7 +214,7 @@ public class NegotiateSecurityFilterTests {
                 this.filter.doFilter(request, response, filterChain);
 
                 final Subject subject = (Subject) request.getSession(false).getAttribute("javax.security.auth.subject");
-                authenticated = subject != null && subject.getPrincipals().size() > 0;
+                authenticated = (subject != null && subject.getPrincipals().size() > 0);
 
                 if (authenticated) {
                     assertThat(response.getHeaderNamesSize()).isGreaterThanOrEqualTo(0);
@@ -322,6 +336,89 @@ public class NegotiateSecurityFilterTests {
     }
 
     /**
+     * Test challenge ntlmdelete.
+     *
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
+     */
+    @Test
+    void testChallengeNTLMDELETE() throws IOException, ServletException {
+        final MockWindowsIdentity mockWindowsIdentity = new MockWindowsIdentity("user", new ArrayList<String>());
+        final SimpleHttpRequest request = new SimpleHttpRequest();
+        final WindowsPrincipal windowsPrincipal = new WindowsPrincipal(mockWindowsIdentity);
+        request.setUserPrincipal(windowsPrincipal);
+        request.setMethod("DELETE");
+        request.setContentLength(0);
+        request.addHeader("Authorization", "NTLM TlRMTVNTUAABAAAABzIAAAYABgArAAAACwALACAAAABXT1JLU1RBVElPTkRPTUFJTg==");
+        final SimpleFilterChain filterChain = new SimpleFilterChain();
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+        this.filter.doFilter(request, response, filterChain);
+        Assertions.assertEquals(401, response.getStatus());
+        final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
+        Assertions.assertEquals(1, wwwAuthenticates.length);
+        Assertions.assertTrue(wwwAuthenticates[0].startsWith("NTLM "));
+        Assertions.assertEquals(2, response.getHeaderNamesSize());
+        Assertions.assertEquals("keep-alive", response.getHeader("Connection"));
+        Assertions.assertEquals(401, response.getStatus());
+    }
+
+    @Test
+    void testBasicSecurityFilterProviderForbidden() throws IOException, ServletException {
+        final String userHeaderValue = "bad-user:password";
+        final String basicAuthHeader = "Basic "
+                + Base64.getEncoder().encodeToString(userHeaderValue.getBytes(StandardCharsets.UTF_8));
+        final SimpleFilterChain filterChain = new SimpleFilterChain();
+        final SimpleHttpRequest request = new SimpleHttpRequest();
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        request.setMethod("POST");
+        request.addHeader("Authorization", basicAuthHeader);
+        filterConfig.setParameter("principalFormat", "sid");
+        filterConfig.setParameter("roleFormat", "none");
+        filterConfig.setParameter("allowGuestLogin", "true");
+        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
+        filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
+        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "SC_FORBIDDEN");
+        this.filter.init(filterConfig);
+        this.filter.doFilter(request, response, filterChain);
+        final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
+        Assertions.assertEquals(1, wwwAuthenticates.length);
+        Assertions.assertTrue(wwwAuthenticates[0].startsWith("Basic "));
+        Assertions.assertEquals(2, response.getHeaderNamesSize());
+        Assertions.assertEquals("close", response.getHeader("Connection"));
+        Assertions.assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
+    }
+
+    @Test
+    void testBasicSecurityFilterProviderUnAuthorized() throws IOException, ServletException {
+        final String userHeaderValue = "bad-user:password";
+        final String basicAuthHeader = "Basic "
+                + Base64.getEncoder().encodeToString(userHeaderValue.getBytes(StandardCharsets.UTF_8));
+        final SimpleFilterChain filterChain = new SimpleFilterChain();
+        final SimpleHttpRequest request = new SimpleHttpRequest();
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        request.setMethod("POST");
+        request.addHeader("Authorization", basicAuthHeader);
+        filterConfig.setParameter("principalFormat", "sid");
+        filterConfig.setParameter("roleFormat", "none");
+        filterConfig.setParameter("allowGuestLogin", "true");
+        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
+        filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
+        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "SC_UNAUTHORIZED");
+        this.filter.init(filterConfig);
+        this.filter.doFilter(request, response, filterChain);
+        final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
+        Assertions.assertEquals(1, wwwAuthenticates.length);
+        Assertions.assertTrue(wwwAuthenticates[0].startsWith("Basic "));
+        Assertions.assertEquals(2, response.getHeaderNamesSize());
+        Assertions.assertEquals("close", response.getHeader("Connection"));
+        Assertions.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
+    }
+
+    /**
      * Test init basic security filter provider.
      *
      * @throws ServletException
@@ -345,6 +442,50 @@ public class NegotiateSecurityFilterTests {
     }
 
     /**
+     * Test init basic security filter provider.
+     *
+     * @throws ServletException
+     *             the servlet exception
+     */
+    @Test
+    public void testInitBasicSecurityFilterProviderWithForbiddenAccessDeniedStrategy() throws ServletException {
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        filterConfig.setParameter("principalFormat", "sid");
+        filterConfig.setParameter("roleFormat", "none");
+        filterConfig.setParameter("allowGuestLogin", "true");
+        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
+        filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
+        filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
+        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "SC_FORBIDDEN");
+        this.filter.init(filterConfig);
+        Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
+        Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
+        Assertions.assertTrue(this.filter.isAllowGuestLogin());
+        Assertions.assertEquals(1, this.filter.getProviders().size());
+        Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
+        Assertions.assertTrue(this.filter.getAccessDeniedStrategy() instanceof ForbiddenAccessDeniedStrategy);
+    }
+
+    @Test
+    public void testInitBasicSecurityFilterProviderWithUnauthorizedAccessDeniedStrategy() throws ServletException {
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        filterConfig.setParameter("principalFormat", "sid");
+        filterConfig.setParameter("roleFormat", "none");
+        filterConfig.setParameter("allowGuestLogin", "true");
+        filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
+        filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
+        filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
+        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "SC_UNAUTHORIZED");
+        this.filter.init(filterConfig);
+        Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
+        Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
+        Assertions.assertTrue(this.filter.isAllowGuestLogin());
+        Assertions.assertEquals(1, this.filter.getProviders().size());
+        Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
+        Assertions.assertTrue(this.filter.getAccessDeniedStrategy() instanceof UnauthorizedAccessDeniedStrategy);
+    }
+
+    /**
      * Test init two security filter providers.
      *
      * @throws ServletException
@@ -358,6 +499,46 @@ public class NegotiateSecurityFilterTests {
                 + "waffle.servlet.spi.NegotiateSecurityFilterProvider waffle.servlet.spi.BasicSecurityFilterProvider");
         this.filter.init(filterConfig);
         Assertions.assertEquals(3, this.filter.getProviders().size());
+    }
+
+    /**
+     * Test init two security filter providers.
+     *
+     * @throws ServletException
+     *             the servlet exception
+     */
+    @Test
+    public void testUseNegotiateSecurityFilterProviderFirst() throws ServletException, IOException {
+
+        final SimpleHttpRequest request = new SimpleHttpRequest();
+        request.setMethod("GET");
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+        // make sure that providers can be specified separated by any kind of space
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        filterConfig.setParameter("securityFilterProviders",
+                "waffle.servlet.spi.NegotiateSecurityFilterProvider waffle.servlet.spi.BasicSecurityFilterProvider");
+        this.filter.init(filterConfig);
+        final SimpleFilterChain filterChain = new SimpleFilterChain();
+        this.filter.doFilter(request, response, filterChain);
+        SecurityFilterProvider provider = this.filter.getProviders().get(0);
+        Assertions.assertEquals(provider.getClass().getName(), "waffle.servlet.spi.NegotiateSecurityFilterProvider");
+    }
+
+    @Test
+    public void testUseBasicSecurityFilterProviderFirst() throws ServletException, IOException {
+
+        final SimpleHttpRequest request = new SimpleHttpRequest();
+        request.setMethod("GET");
+        final SimpleHttpResponse response = new SimpleHttpResponse();
+        // make sure that providers can be specified separated by any kind of space
+        final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
+        filterConfig.setParameter("securityFilterProviders",
+                "waffle.servlet.spi.BasicSecurityFilterProvider waffle.servlet.spi.NegotiateSecurityFilterProvider");
+        this.filter.init(filterConfig);
+        final SimpleFilterChain filterChain = new SimpleFilterChain();
+        this.filter.doFilter(request, response, filterChain);
+        SecurityFilterProvider provider = this.filter.getProviders().get(0);
+        Assertions.assertEquals(provider.getClass().getName(), "waffle.servlet.spi.BasicSecurityFilterProvider");
     }
 
     /**
@@ -424,4 +605,204 @@ public class NegotiateSecurityFilterTests {
             Assertions.assertEquals("java.lang.ClassNotFoundException: invalidClass", e.getMessage());
         }
     }
+
+    /**
+     * Test cors and bearer authorization I init.
+     *
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
+     */
+    @Test
+    void testCorsAndBearerAuthorizationI_init(@Mocked final FilterConfig filterConfig) throws Exception {
+
+        /* The init parameter names. */
+        final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+
+            /** The Constant serialVersionUID. */
+            private static final long serialVersionUID = 1L;
+
+            {
+                this.add("principalFormat");
+                this.add("roleFormat");
+                this.add("allowGuestLogin");
+                this.add("impersonate");
+                this.add("securityFilterProviders");
+                this.add("excludePatterns");
+                this.add("excludeCorsPreflight");
+                this.add("excludeBearerAuthorization");
+            }
+        });
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = initParameterNames;
+                filterConfig.getInitParameter("principalFormat");
+                this.result = "fqn";
+                filterConfig.getInitParameter("roleFormat");
+                this.result = "fqn";
+                filterConfig.getInitParameter("allowGuestLogin");
+                this.result = "false";
+                filterConfig.getInitParameter("impersonate");
+                this.result = "true";
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.result = "waffle.servlet.spi.BasicSecurityFilterProvider\nwaffle.servlet.spi.NegotiateSecurityFilterProvider";
+                filterConfig.getInitParameter("excludePatterns");
+                this.result = ".*/peter/.*";
+                filterConfig.getInitParameter("excludeCorsPreflight");
+                this.result = "true";
+                filterConfig.getInitParameter("excludeBearerAuthorization");
+                this.result = "true";
+            }
+        };
+
+        this.filter.init(filterConfig);
+
+        final Field excludeCorsPreflight = this.filter.getClass().getDeclaredField("excludeCorsPreflight");
+        excludeCorsPreflight.setAccessible(true);
+        final Field excludeBearerAuthorization = this.filter.getClass().getDeclaredField("excludeBearerAuthorization");
+        excludeBearerAuthorization.setAccessible(true);
+        Assertions.assertTrue(excludeCorsPreflight.getBoolean(this.filter));
+        Assertions.assertTrue(excludeBearerAuthorization.getBoolean(this.filter));
+        Assertions.assertTrue(this.filter.isImpersonate());
+        Assertions.assertFalse(this.filter.isAllowGuestLogin());
+
+        new Verifications() {
+            {
+                filterConfig.getInitParameter(this.withInstanceOf(String.class));
+                this.minTimes = 8;
+            }
+        };
+
+    }
+
+    /**
+     * Test exclude cors and OAUTH bearer authorization do filter.
+     *
+     * @param request
+     *            the request
+     * @param response
+     *            the response
+     * @param chain
+     *            the chain
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
+     */
+    @Test
+    void testExcludeCorsAndOAUTHBearerAuthorization_doFilter(@Mocked final HttpServletRequest request,
+            @Mocked final HttpServletResponse response, @Mocked final FilterChain chain,
+            @Mocked final FilterConfig filterConfig) throws Exception {
+
+        /* The init parameter names. */
+        final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+
+            /** The Constant serialVersionUID. */
+            private static final long serialVersionUID = 1L;
+
+            {
+                this.add("principalFormat");
+                this.add("roleFormat");
+                this.add("allowGuestLogin");
+                this.add("impersonate");
+                this.add("securityFilterProviders");
+                this.add("excludeCorsPreflight");
+                this.add("excludeBearerAuthorization");
+            }
+        });
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = initParameterNames;
+                filterConfig.getInitParameter(PRINCIPAL_FORMAT.getParamName());
+                this.result = "fqn";
+                filterConfig.getInitParameter("roleFormat");
+                this.result = "fqn";
+                filterConfig.getInitParameter("allowGuestLogin");
+                this.result = "false";
+                filterConfig.getInitParameter("impersonate");
+                this.result = "false";
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.result = "waffle.servlet.spi.NegotiateSecurityFilterProvider\nwaffle.servlet.spi.BasicSecurityFilterProvider";
+                filterConfig.getInitParameter("excludeCorsPreflight");
+                this.result = "true";
+                filterConfig.getInitParameter("excludeBearerAuthorization");
+                this.result = "true";
+                CorsPreFlightCheck.isPreflight(request);
+                this.result = true;
+                request.getHeader("Authorization");
+                this.result = "Bearer aBase64hash";
+            }
+        };
+
+        this.filter.init(filterConfig);
+        this.filter.doFilter(request, response, chain);
+
+        new Verifications() {
+            {
+                chain.doFilter(request, response);
+                this.times = 1;
+            }
+        };
+
+    }
+
+    /**
+     * Test exclude cors and OAUTH bearer authorization do filter.
+     *
+     * @param request
+     *            the request
+     * @param response
+     *            the response
+     * @param chain
+     *            the chain
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
+     */
+    @Test
+    void testNotEnabledFilter(@Mocked final HttpServletRequest request, @Mocked final HttpServletResponse response,
+            @Mocked final FilterChain chain, @Mocked final FilterConfig filterConfig) throws Exception {
+
+        /* The init parameter names. */
+        final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+
+            /** The Constant serialVersionUID. */
+            private static final long serialVersionUID = 1L;
+
+            {
+                this.add("enabled");
+            }
+        });
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = initParameterNames;
+                filterConfig.getInitParameter(ENABLED.getParamName());
+                this.result = "false";
+            }
+        };
+
+        this.filter.init(filterConfig);
+        this.filter.doFilter(request, response, chain);
+
+        new Verifications() {
+            {
+                filterConfig.getInitParameterNames();
+                this.times = 1;
+                filterConfig.getInitParameter(this.withInstanceOf(String.class));
+                this.minTimes = 1;
+                chain.doFilter(request, response);
+                this.times = 1;
+            }
+        };
+
+    }
+
 }

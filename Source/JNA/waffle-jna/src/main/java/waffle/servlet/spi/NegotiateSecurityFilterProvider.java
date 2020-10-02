@@ -51,9 +51,6 @@ public class NegotiateSecurityFilterProvider implements SecurityFilterProvider {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(NegotiateSecurityFilterProvider.class);
 
-    /** The Constant WWW_AUTHENTICATE. */
-    private static final String WWW_AUTHENTICATE = "WWW-Authenticate";
-
     /** The Constant PROTOCOLS. */
     private static final String PROTOCOLS = "protocols";
 
@@ -103,7 +100,7 @@ public class NegotiateSecurityFilterProvider implements SecurityFilterProvider {
     @Override
     public void sendUnauthorized(final HttpServletResponse response) {
         for (final String protocol : this.protocols) {
-            response.addHeader(NegotiateSecurityFilterProvider.WWW_AUTHENTICATE, protocol);
+            response.addHeader(SecurityFilterProvider.WWW_AUTHENTICATE, protocol);
         }
     }
 

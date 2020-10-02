@@ -44,23 +44,23 @@ class CorsAwareNegotiateSecurityFilterTest {
 
     /** The cors aware negotiate security filter. */
     @Tested
-    CorsAwareNegotiateSecurityFilter corsAwareNegotiateSecurityFilter;
+    CorsAwareNegotiateSecurityFilter corsAwareNegotiateSecurityFilter = null;
 
     /** The preflight request. */
     @Mocked
-    HttpServletRequest preflightRequest;
+    HttpServletRequest preflightRequest = null;
 
     /** The preflight response. */
     @Mocked
-    HttpServletResponse preflightResponse;
+    HttpServletResponse preflightResponse = null;
 
     /** The chain. */
     @Mocked
-    FilterChain chain;
+    FilterChain chain = null;
 
     /** The filter config. */
     @Mocked
-    FilterConfig filterConfig;
+    FilterConfig filterConfig = null;
 
     /**
      * Do filter test cors preflight request.
@@ -84,6 +84,7 @@ class CorsAwareNegotiateSecurityFilterTest {
             }
         };
 
+        this.corsAwareNegotiateSecurityFilter.init(filterConfig);
         this.corsAwareNegotiateSecurityFilter.doFilter(this.preflightRequest, this.preflightResponse, this.chain);
 
         new Verifications() {

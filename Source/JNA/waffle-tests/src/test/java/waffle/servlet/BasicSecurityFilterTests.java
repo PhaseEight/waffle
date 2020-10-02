@@ -33,10 +33,7 @@ import javax.security.auth.Subject;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import waffle.mock.MockWindowsAuthProvider;
 import waffle.mock.http.SimpleFilterChain;
@@ -53,18 +50,30 @@ public class BasicSecurityFilterTests {
 
     /** The filter. */
     private NegotiateSecurityFilter filter;
+    private SimpleHttpRequest request;
+    private SimpleHttpResponse response;
+    private FilterChain filterChain;
 
     /**
-     * Sets the up.
-     *
-     * @throws ServletException
-     *             the servlet exception
+     * Set up.
+     * 
+     * @throws javax.servlet.ServletException
      */
     @BeforeEach
     void setUp() throws ServletException {
         this.filter = new NegotiateSecurityFilter();
         this.filter.setAuth(new MockWindowsAuthProvider());
         this.filter.init(null);
+        this.request = new SimpleHttpRequest();
+        this.request.setMethod("GET");
+
+        final String userHeaderValue = WindowsAccountImpl.getCurrentUsername() + ":password";
+        final String basicAuthHeader = "Basic "
+                + Base64.getEncoder().encodeToString(userHeaderValue.getBytes(StandardCharsets.UTF_8));
+        this.request.addHeader("Authorization", basicAuthHeader);
+
+        this.response = new SimpleHttpResponse();
+        this.filterChain = new SimpleFilterChain();
     }
 
     /**
@@ -98,6 +107,7 @@ public class BasicSecurityFilterTests {
         this.filter.doFilter(request, response, filterChain);
         final Subject subject = (Subject) request.getSession(false).getAttribute("javax.security.auth.subject");
         Assertions.assertNotNull(subject);
-        assertThat(subject.getPrincipals().size()).isGreaterThan(0);
+        assertThat(subject.getPrincipals().size()).isPositive();
     }
+
 }
