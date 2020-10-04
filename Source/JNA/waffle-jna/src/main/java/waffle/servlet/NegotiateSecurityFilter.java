@@ -23,8 +23,6 @@
  */
 package waffle.servlet;
 
-import static javax.servlet.http.HttpServletResponse.*;
-
 import com.sun.jna.Platform;
 
 import java.io.IOException;
@@ -37,7 +35,12 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.security.auth.Subject;
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -45,7 +48,11 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import waffle.servlet.spi.*;
+import waffle.servlet.spi.AccessDeniedHandler;
+import waffle.servlet.spi.ForbiddenAccessDeniedHandler;
+import waffle.servlet.spi.SecurityFilterProvider;
+import waffle.servlet.spi.SecurityFilterProviderCollection;
+import waffle.servlet.spi.UnauthorizedAccessDeniedHandler;
 import waffle.util.AuthorizationHeader;
 import waffle.util.CorsPreFlightCheck;
 import waffle.windows.auth.IWindowsAuthProvider;
@@ -104,10 +111,9 @@ public class NegotiateSecurityFilter implements Filter {
     /** The exclusions for cors pre flight flag. */
     private boolean excludeCorsPreflight;
 
-    /** The enable filter flag. This will not not do any Windows Authentication */
     private boolean enabled = true;
 
-    private AccessDeniedStrategy accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
+    private AccessDeniedHandler accessDeniedHandler = new UnauthorizedAccessDeniedHandler();
 
     /**
      * Instantiates a new negotiate security filter.
@@ -129,7 +135,7 @@ public class NegotiateSecurityFilter implements Filter {
         final HttpServletResponse response = (HttpServletResponse) sres;
 
         NegotiateSecurityFilter.LOGGER.info("{} {}, contentlength: {}", request.getMethod(), request.getRequestURI(),
-                Integer.valueOf(request.getContentLength()));
+                request.getContentLength());
 
         // If we are not in a windows environment, resume filter chain
         if (!Platform.isWindows()) {
@@ -139,7 +145,7 @@ public class NegotiateSecurityFilter implements Filter {
         }
 
         // If this filter is disabled resume filter chain
-        if (!this.enabled) {
+        if (!this.isEnabled()) {
             NegotiateSecurityFilter.LOGGER.info("filter disabled, resuming filter chain");
             chain.doFilter(request, response);
             return;
@@ -178,6 +184,12 @@ public class NegotiateSecurityFilter implements Filter {
             return;
         }
 
+        if (authorizationHeader.isNull()) {
+            NegotiateSecurityFilter.LOGGER.info("authorization required");
+            this.accessDenied(authorizationHeader, providers, response);
+            return;
+        }
+
         // authenticate user
         if (!authorizationHeader.isNull()) {
 
@@ -187,6 +199,7 @@ public class NegotiateSecurityFilter implements Filter {
                 windowsIdentity = this.providers.doFilter(request, response);
                 // standard behaviour for NTLM and Negotiate if the Providers have set WWW-Authenticate
                 if (windowsIdentity == null) {
+                    this.accessDenied(authorizationHeader, providers, response);
                     return;
                 }
             } catch (final IOException e) {
@@ -252,12 +265,7 @@ public class NegotiateSecurityFilter implements Filter {
                     windowsIdentity.dispose();
                 }
             }
-
-            return;
         }
-
-        NegotiateSecurityFilter.LOGGER.info("authorization required");
-        this.accessDenied(authorizationHeader, providers, response);
     }
 
     /**
@@ -346,14 +354,17 @@ public class NegotiateSecurityFilter implements Filter {
                 NegotiateSecurityFilter.LOGGER.debug("Init Param: '{}={}'", parameterName, parameterValue);
                 InitParameter initParam = InitParameter.get(parameterName);
                 switch (initParam) {
-                    case ACCESS_DENIED_STRATEGY:
-                        this.setAccessDeniedStrategy(parameterValue);
+                    case ACCESS_DENIED_HANDLER:
+                        this.setAccessDeniedHandler(parameterValue);
                         break;
                     case LOGON_ERROR_RESPONSE_CODE:
-                        this.setAccessDeniedStrategy(Integer.parseInt(parameterValue));
+                        this.setAccessDeniedHandler(Integer.parseInt(parameterValue));
+                        break;
+                    case DISABLE_SSO:
+                        this.setEnabled(!Boolean.parseBoolean(parameterValue));
                         break;
                     case ENABLED:
-                        this.enabled = Boolean.parseBoolean(parameterValue);
+                        this.setEnabled(Boolean.parseBoolean(parameterValue));
                         break;
                     case PRINCIPAL_FORMAT:
                         this.principalFormat = PrincipalFormat.valueOf(parameterValue.toUpperCase(Locale.ENGLISH));
@@ -490,7 +501,7 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     /**
-     * When a login attempt has failed, the accessDeniedStrategy is called
+     * When a login attempt has failed, the accessDeniedHandler is called
      * 
      * @param response
      *            HTTP Response
@@ -498,7 +509,7 @@ public class NegotiateSecurityFilter implements Filter {
     private void accessDenied(final AuthorizationHeader authorizationHeader,
             final SecurityFilterProviderCollection providers, final HttpServletResponse response) {
         try {
-            accessDeniedStrategy.handle(authorizationHeader, providers, response);
+            accessDeniedHandler.handle(authorizationHeader, providers, response);
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -589,40 +600,50 @@ public class NegotiateSecurityFilter implements Filter {
     /**
      * Returns the Access Denied Strategy Object
      *
-     * @return accessDeniedStrategy
+     * @return accessDeniedHandler
      */
-    public AccessDeniedStrategy getAccessDeniedStrategy() {
-        return this.accessDeniedStrategy;
+    public AccessDeniedHandler getAccessDeniedHandler() {
+        return this.accessDeniedHandler;
     }
 
-    public void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException {
+    public void setAccessDeniedHandler(String accessDeniedHandler) throws ServletException {
 
-        if ("SC_UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
-            this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
-        } else if ("SC_FORBIDDEN".equalsIgnoreCase(accessDeniedStrategy)) {
-            this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
+        if ("SC_UNAUTHORIZED".equalsIgnoreCase(accessDeniedHandler)) {
+            this.accessDeniedHandler = new UnauthorizedAccessDeniedHandler();
+        } else if ("SC_FORBIDDEN".equalsIgnoreCase(accessDeniedHandler)) {
+            this.accessDeniedHandler = new ForbiddenAccessDeniedHandler();
         } else {
-            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedStrategy));
+            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedHandler));
         }
 
     }
 
-    public void setAccessDeniedStrategy(int accessDeniedStrategy) throws ServletException {
+    public void setAccessDeniedHandler(int accessDeniedHandler) throws ServletException {
 
-        if (accessDeniedStrategy == 401) {
-            this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
-        } else if (accessDeniedStrategy == 403) {
-            this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
+        if (accessDeniedHandler == HttpServletResponse.SC_UNAUTHORIZED) {
+            this.accessDeniedHandler = new UnauthorizedAccessDeniedHandler();
+        } else if (accessDeniedHandler == HttpServletResponse.SC_FORBIDDEN) {
+            this.accessDeniedHandler = new ForbiddenAccessDeniedHandler();
         } else {
-            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedStrategy));
+            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedHandler));
         }
 
+    }
+
+    /** The enable filter flag. This will not not do any Windows Authentication */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public enum InitParameter {
         LOGON_ERROR_RESPONSE_CODE("logonErrorResponseCode"),
-        ACCESS_DENIED_STRATEGY("accessDeniedStrategy"),
+        ACCESS_DENIED_HANDLER("accessDeniedHandler"),
         ENABLED("enabled"),
+        DISABLE_SSO("disableSSO"),
         PRINCIPAL_FORMAT("principalFormat"),
         ROLE_FORMAT("roleFormat"),
         ALLOW_GUEST_LOGIN("allowGuestLogin"),
@@ -656,6 +677,10 @@ public class NegotiateSecurityFilter implements Filter {
                 lookup.put(ip.getParamName(), ip);
         }
 
+        /*
+         * checks if the paramter is valid or if the parameter is if style / identifying the parameter as a provider
+         * provider parameter
+         */
         public static InitParameter get(String paramName) {
             // the reverse lookup by simply getting
             // the value from the lookup HashMap.

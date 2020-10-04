@@ -33,7 +33,10 @@ import javax.security.auth.Subject;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import waffle.mock.MockWindowsAuthProvider;
 import waffle.mock.http.SimpleFilterChain;
@@ -58,6 +61,7 @@ public class BasicSecurityFilterTests {
      * Set up.
      * 
      * @throws javax.servlet.ServletException
+     *             initialization of the servlet can fail
      */
     @BeforeEach
     void setUp() throws ServletException {
@@ -94,16 +98,6 @@ public class BasicSecurityFilterTests {
      */
     @Test
     void testBasicAuth() throws IOException, ServletException {
-        final SimpleHttpRequest request = new SimpleHttpRequest();
-        request.setMethod("GET");
-
-        final String userHeaderValue = WindowsAccountImpl.getCurrentUsername() + ":password";
-        final String basicAuthHeader = "Basic "
-                + Base64.getEncoder().encodeToString(userHeaderValue.getBytes(StandardCharsets.UTF_8));
-        request.addHeader("Authorization", basicAuthHeader);
-
-        final SimpleHttpResponse response = new SimpleHttpResponse();
-        final FilterChain filterChain = new SimpleFilterChain();
         this.filter.doFilter(request, response, filterChain);
         final Subject subject = (Subject) request.getSession(false).getAttribute("javax.security.auth.subject");
         Assertions.assertNotNull(subject);

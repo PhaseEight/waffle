@@ -35,7 +35,10 @@ import com.sun.jna.platform.win32.SspiUtil.ManagedSecBufferDesc;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Enumeration;
 
 import javax.security.auth.Subject;
 import javax.servlet.FilterChain;
@@ -59,9 +62,9 @@ import waffle.mock.http.SimpleFilterChain;
 import waffle.mock.http.SimpleFilterConfig;
 import waffle.mock.http.SimpleHttpRequest;
 import waffle.mock.http.SimpleHttpResponse;
-import waffle.servlet.spi.ForbiddenAccessDeniedStrategy;
+import waffle.servlet.spi.ForbiddenAccessDeniedHandler;
 import waffle.servlet.spi.SecurityFilterProvider;
-import waffle.servlet.spi.UnauthorizedAccessDeniedStrategy;
+import waffle.servlet.spi.UnauthorizedAccessDeniedHandler;
 import waffle.util.CorsPreFlightCheck;
 import waffle.windows.auth.IWindowsCredentialsHandle;
 import waffle.windows.auth.PrincipalFormat;
@@ -228,7 +231,7 @@ public class NegotiateSecurityFilterTests {
                 final String continueToken = response.getHeader("WWW-Authenticate")
                         .substring(securityPackage.length() + 1);
                 final byte[] continueTokenBytes = Base64.getDecoder().decode(continueToken);
-                assertThat(continueTokenBytes.length).isGreaterThan(0);
+                assertThat(continueTokenBytes.length).isPositive();
                 final ManagedSecBufferDesc continueTokenBuffer = new ManagedSecBufferDesc(Sspi.SECBUFFER_TOKEN,
                         continueTokenBytes);
                 clientContext.initialize(clientContext.getHandle(), continueTokenBuffer, "localhost");
@@ -380,14 +383,14 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("allowGuestLogin", "true");
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "SC_FORBIDDEN");
+        filterConfig.setParameter(ACCESS_DENIED_HANDLER.getParamName(), "SC_FORBIDDEN");
         this.filter.init(filterConfig);
         this.filter.doFilter(request, response, filterChain);
         final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
         Assertions.assertEquals(1, wwwAuthenticates.length);
         Assertions.assertTrue(wwwAuthenticates[0].startsWith("Basic "));
-        Assertions.assertEquals(2, response.getHeaderNamesSize());
         Assertions.assertEquals("close", response.getHeader("Connection"));
+        Assertions.assertEquals(2, response.getHeaderNamesSize());
         Assertions.assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
     }
 
@@ -407,14 +410,14 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("allowGuestLogin", "true");
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "SC_UNAUTHORIZED");
+        filterConfig.setParameter(ACCESS_DENIED_HANDLER.getParamName(), "SC_UNAUTHORIZED");
         this.filter.init(filterConfig);
         this.filter.doFilter(request, response, filterChain);
         final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
         Assertions.assertEquals(1, wwwAuthenticates.length);
         Assertions.assertTrue(wwwAuthenticates[0].startsWith("Basic "));
-        Assertions.assertEquals(2, response.getHeaderNamesSize());
         Assertions.assertEquals("close", response.getHeader("Connection"));
+        Assertions.assertEquals(2, response.getHeaderNamesSize());
         Assertions.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
     }
 
@@ -448,7 +451,7 @@ public class NegotiateSecurityFilterTests {
      *             the servlet exception
      */
     @Test
-    public void testInitBasicSecurityFilterProviderWithForbiddenAccessDeniedStrategy() throws ServletException {
+    public void testInitBasicSecurityFilterProviderWithForbiddenAccessDeniedHandler() throws ServletException {
         final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
         filterConfig.setParameter("principalFormat", "sid");
         filterConfig.setParameter("roleFormat", "none");
@@ -456,18 +459,18 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "SC_FORBIDDEN");
+        filterConfig.setParameter(ACCESS_DENIED_HANDLER.getParamName(), "SC_FORBIDDEN");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
         Assertions.assertTrue(this.filter.isAllowGuestLogin());
         Assertions.assertEquals(1, this.filter.getProviders().size());
         Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
-        Assertions.assertTrue(this.filter.getAccessDeniedStrategy() instanceof ForbiddenAccessDeniedStrategy);
+        Assertions.assertTrue(this.filter.getAccessDeniedHandler() instanceof ForbiddenAccessDeniedHandler);
     }
 
     @Test
-    public void testInitBasicSecurityFilterProviderWithUnauthorizedAccessDeniedStrategy() throws ServletException {
+    public void testInitBasicSecurityFilterProviderWithUnauthorizedAccessDeniedHandler() throws ServletException {
         final SimpleFilterConfig filterConfig = new SimpleFilterConfig();
         filterConfig.setParameter("principalFormat", "sid");
         filterConfig.setParameter("roleFormat", "none");
@@ -475,14 +478,14 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "SC_UNAUTHORIZED");
+        filterConfig.setParameter(ACCESS_DENIED_HANDLER.getParamName(), "SC_UNAUTHORIZED");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
         Assertions.assertTrue(this.filter.isAllowGuestLogin());
         Assertions.assertEquals(1, this.filter.getProviders().size());
         Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
-        Assertions.assertTrue(this.filter.getAccessDeniedStrategy() instanceof UnauthorizedAccessDeniedStrategy);
+        Assertions.assertTrue(this.filter.getAccessDeniedHandler() instanceof UnauthorizedAccessDeniedHandler);
     }
 
     /**

@@ -1,9 +1,29 @@
 3.0.0 (in-progress)
 ===================
-* Relicensed project as MIT
+* Changed project license to MIT
 * Support different cache solutions (default is caffeine cache) through service loader using '/META-INF/services/waffle.cache.CacheSupplier' pointing to your cache solution.
 * Remove use of Group interface and directly use our implementation to allow build on jdk14/15 (not confirmed JAAS works, just compiles)
-* Cleanup error prone code usage resulting in header treatment without training '\n'
+* Cleanup error prone code usage resulting in header treatment without trailing '\n'
+
+* [#637](https://github.com/Waffle/waffle/issues/637) Use JNA OS Type to determine OS; Platform.isWindows()
+    - waffle.servlet.NegotiateSecurityFilter will continue in non-Windows OS
+    - updated tests from .isGreatherThan(0) to use .isPositive()
+
+* [#638](https://github.com/Waffle/waffle/issues/638) add waffle.servlet.spi.AccessDeniedHandler similar to Spring CustomAccessDeniedHandler
+    - UnauthorizedAccessDeniedHandler makes everything work as default with 401
+    - ForbiddenAccessDeniedHandler makes everything will return a 403 thereby helping hide the fact that the resource exists
+    - added InitParameter enumeration to NegotiateSecurityFilter to use in parameter validation
+    - provide a method to identify unsupported parameters.__
+    - moved NegotiateSecurityFilterProvider.WWW_AUTHENTICATE to SecurityFilterProvider to be usable by BasicSecurityFilterProvider
+    - renamed sendUnauthorized to addAuthorizationHeader to align with the description and what the provider does for WWW-Authentication
+    - Add tests to NegotiateSecurityFilterProviderTests to waffle-tests waffale.sevlet
+    - Moved CorsAwareNegotiateSecurityFilterTest to waffle-tests waffale.sevlet.CorsAwareNegotiateSecurityFilterTest     
+    - Implemented some code critique guides for import and redundant code and brackets
+
+* [#639](https://github.com/Waffle/waffle/issues/639) add enable allow the disabling of filters; useful where change management does not permit the edit of web.xml
+    - filters are enabled by default
+    - disableSSO:true will set <strong>enable</strong> to <font style="color:blue">false</font>
+  
 
 2.3.0 (6/19/2020)
 =================

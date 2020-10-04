@@ -23,6 +23,8 @@
  */
 package waffle.servlet.spi;
 
+import com.sun.jna.platform.win32.Win32Exception;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
@@ -87,10 +89,17 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
         final String usernamePassword = new String(authorizationHeader.getTokenBytes(), charset);
         final String[] usernamePasswordArray = usernamePassword.split(":", 2);
         if (usernamePasswordArray.length != 2) {
+            addAuthorizationHeader(response);
             throw new RuntimeException("Invalid username:password in Authorization header.");
         }
         BasicSecurityFilterProvider.LOGGER.debug("logging in user: {}", usernamePasswordArray[0]);
-        return this.auth.logonUser(usernamePasswordArray[0], usernamePasswordArray[1]);
+        IWindowsIdentity windowsIdentity = null;
+        try {
+            windowsIdentity = this.auth.logonUser(usernamePasswordArray[0], usernamePasswordArray[1]);
+        } catch (Win32Exception e) {
+            addAuthorizationHeader(response);
+        }
+        return windowsIdentity;
     }
 
     @Override
@@ -103,11 +112,11 @@ public class BasicSecurityFilterProvider implements SecurityFilterProvider {
         return "Basic".equalsIgnoreCase(securityPackage);
     }
 
-    @Override
-    /**
+    /*
      * some user agents might not work correctly if they see the , charset parameter after realm
      */
-    public void sendUnauthorized(final HttpServletResponse response) {
+    @Override
+    public void addAuthorizationHeader(final HttpServletResponse response) {
         String challenge = "Basic realm=\"" + this.realm + "\"";
         if (charset != null) {
             challenge = challenge + ", charset=\"" + charset.name() + "\"";

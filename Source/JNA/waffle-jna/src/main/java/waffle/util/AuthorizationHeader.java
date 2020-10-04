@@ -231,8 +231,7 @@ public class AuthorizationHeader {
      * @return true if Authorization Header Authentication Scheme is Basic or NTLM Type2 Message or Negotiate and
      */
     public boolean isLogonAttempt() {
-        if (this.isBasicAuthorizationHeader() || this.isSPNegTokenArgMessage() || this.isNtlmType3Message()
-                || this.isBasicAuthorizationHeader()) {
+        if (this.isBasicAuthorizationHeader() || this.isSPNegTokenArgMessage() || this.isNtlmType3Message()) {
             return true;
         }
 

@@ -42,17 +42,6 @@ import org.junit.jupiter.api.Test;
 import waffle.mock.http.SimpleHttpResponse;
 import waffle.servlet.spi.BasicSecurityFilterProvider;
 
-/**
- * Waffle (https://github.com/Waffle/waffle)
- *
- * Copyright (c) 2010-2018 Application Security, Inc.
- *
- * All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License v1.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html.
- *
- * Contributors: Application Security, Inc.
- */
 class NegotiateSecurityFilterProviderTests {
 
     /** The negotiate security filter. */
@@ -96,7 +85,7 @@ class NegotiateSecurityFilterProviderTests {
 
         this.filter.init(filterConfig);
 
-        final Field charset = (this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName()))
+        final Field charset = this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName())
                 .getClass().getDeclaredField("charset");
         charset.setAccessible(true);
 
@@ -105,7 +94,7 @@ class NegotiateSecurityFilterProviderTests {
 
         BasicSecurityFilterProvider provider = (BasicSecurityFilterProvider) this.filter.getProviders()
                 .getByClassName(BasicSecurityFilterProvider.class.getName());
-        provider.sendUnauthorized(response);
+        provider.addAuthorizationHeader(response);
         Assertions.assertEquals("Basic realm=\"BasicSecurityFilterProvider\"", response.getHeader("WWW-Authenticate"));
 
         new Verifications() {
@@ -153,7 +142,7 @@ class NegotiateSecurityFilterProviderTests {
 
         this.filter.init(filterConfig);
 
-        final Field charset = (this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName()))
+        final Field charset = this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName())
                 .getClass().getDeclaredField("charset");
         charset.setAccessible(true);
 
@@ -162,7 +151,7 @@ class NegotiateSecurityFilterProviderTests {
 
         BasicSecurityFilterProvider provider = (BasicSecurityFilterProvider) this.filter.getProviders()
                 .getByClassName(BasicSecurityFilterProvider.class.getName());
-        provider.sendUnauthorized(response);
+        provider.addAuthorizationHeader(response);
         Assertions.assertEquals("Basic realm=\"BasicSecurityFilterProvider\", charset=\"UTF-8\"",
                 response.getHeader("WWW-Authenticate"));
 
@@ -211,7 +200,7 @@ class NegotiateSecurityFilterProviderTests {
 
         this.filter.init(filterConfig);
 
-        final Field charset = (this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName()))
+        final Field charset = this.filter.getProviders().getByClassName(BasicSecurityFilterProvider.class.getName())
                 .getClass().getDeclaredField("charset");
         charset.setAccessible(true);
 
@@ -232,8 +221,6 @@ class NegotiateSecurityFilterProviderTests {
     @Test
     void testNegotiateSecurityFilterProviderWithInvalidCharset(@Mocked final FilterConfig filterConfig)
             throws Exception {
-
-        final SimpleHttpResponse response = new SimpleHttpResponse();
 
         Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
 
@@ -281,8 +268,6 @@ class NegotiateSecurityFilterProviderTests {
     @Test
     void testNegotiateSecurityFilterProviderWithUnsupportedCharset(@Mocked final FilterConfig filterConfig)
             throws Exception {
-
-        final SimpleHttpResponse response = new SimpleHttpResponse();
 
         Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
 

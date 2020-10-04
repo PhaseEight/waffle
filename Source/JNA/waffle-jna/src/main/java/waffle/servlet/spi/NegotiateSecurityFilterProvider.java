@@ -98,7 +98,7 @@ public class NegotiateSecurityFilterProvider implements SecurityFilterProvider {
     }
 
     @Override
-    public void sendUnauthorized(final HttpServletResponse response) {
+    public void addAuthorizationHeader(final HttpServletResponse response) {
         for (final String protocol : this.protocols) {
             response.addHeader(SecurityFilterProvider.WWW_AUTHENTICATE, protocol);
         }
@@ -140,7 +140,7 @@ public class NegotiateSecurityFilterProvider implements SecurityFilterProvider {
         if (continueTokenBytes != null && continueTokenBytes.length > 0) {
             final String continueToken = Base64.getEncoder().encodeToString(continueTokenBytes);
             NegotiateSecurityFilterProvider.LOGGER.debug("continue token: {}", continueToken);
-            response.addHeader(NegotiateSecurityFilterProvider.WWW_AUTHENTICATE, securityPackage + " " + continueToken);
+            response.addHeader(SecurityFilterProvider.WWW_AUTHENTICATE, securityPackage + " " + continueToken);
         }
 
         NegotiateSecurityFilterProvider.LOGGER.debug("continue required: {}",

@@ -68,7 +68,7 @@ public class NegotiateSecurityFilterEntryPoint implements AuthenticationEntryPoi
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setHeader("Connection", "keep-alive");
-        this.provider.sendUnauthorized(response);
+        this.provider.sendAuthorizationHeaders(response);
         response.flushBuffer();
     }
 

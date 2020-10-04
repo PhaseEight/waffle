@@ -21,20 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/*
-  Waffle (https://github.com/Waffle/waffle)
-
-  Copyright (c) 2010-2019 Application Security, Inc.
-
-  All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse
-  Public License v1.0 which accompanies this distribution, and is available at
-  https://www.eclipse.org/legal/epl-v10.html.
-
-  Contributors: Application Security, Inc.
- */
 package waffle.spring;
-
-import java.util.*;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

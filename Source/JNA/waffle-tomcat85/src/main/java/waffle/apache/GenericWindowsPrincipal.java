@@ -40,6 +40,7 @@ import waffle.windows.auth.WindowsAccount;
  *
  * @author dblock[at]dblock[dot]org
  */
+@Deprecated
 public class GenericWindowsPrincipal extends GenericPrincipal {
 
     /** The Constant serialVersionUID. */

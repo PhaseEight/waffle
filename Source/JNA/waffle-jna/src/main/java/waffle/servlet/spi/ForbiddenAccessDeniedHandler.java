@@ -29,23 +29,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import waffle.util.AuthorizationHeader;
 
-public class UnauthorizedAccessDeniedStrategy implements AccessDeniedStrategy {
+public class ForbiddenAccessDeniedHandler implements AccessDeniedHandler {
+
+    final private static int errorCode = HttpServletResponse.SC_FORBIDDEN;
+
     @Override
     public void handle(final AuthorizationHeader authorizationHeader, final SecurityFilterProviderCollection providers,
             final HttpServletResponse response) throws IOException {
 
-        if (!(authorizationHeader.isNtlmType1PostAuthorizationHeader() || authorizationHeader.isNtlmType1Message()
-                || authorizationHeader.isSPNegTokenInitMessage() || authorizationHeader.isSPNegTokenArgMessage())) {
-            providers.sendUnauthorized(response);
-        }
-
-        if (authorizationHeader.isLogonAttempt()) {
-            /* response.setHeader("Connection", "close"); */
-            response.setHeader("Connection", "close");
-        } else {
-            response.setHeader("Connection", "keep-alive");
-        }
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        response.flushBuffer();
+        AccessDeniedHandler.sendUnauthorized(authorizationHeader, providers, response, this.errorCode);
     }
+
 }

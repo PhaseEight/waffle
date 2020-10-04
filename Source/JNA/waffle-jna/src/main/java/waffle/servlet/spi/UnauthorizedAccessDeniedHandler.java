@@ -29,20 +29,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import waffle.util.AuthorizationHeader;
 
-public interface AccessDeniedStrategy {
+public class UnauthorizedAccessDeniedHandler implements AccessDeniedHandler {
 
-    /**
-     * Decide what to do with
-     * 
-     * @param authorizationHeader
-     *            the parsed and processed Authorization Header created by a SecurityRequestFilter
-     * @param providers
-     *            the Security Providers configured on the Filter
-     * @param response
-     *            this is used to send the details to the client
-     * @throws IOException
-     *             is thrown while trying to write on the response to the client
-     */
-    void handle(AuthorizationHeader authorizationHeader, SecurityFilterProviderCollection providers,
-            HttpServletResponse response) throws IOException;
+    final private static int errorCode = HttpServletResponse.SC_UNAUTHORIZED;
+
+    @Override
+    public void handle(final AuthorizationHeader authorizationHeader, final SecurityFilterProviderCollection providers,
+            final HttpServletResponse response) throws IOException {
+
+        AccessDeniedHandler.sendUnauthorized(authorizationHeader, providers, response, this.errorCode);
+    }
 }

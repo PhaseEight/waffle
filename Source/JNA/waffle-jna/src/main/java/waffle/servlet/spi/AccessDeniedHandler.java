@@ -29,23 +29,39 @@ import javax.servlet.http.HttpServletResponse;
 
 import waffle.util.AuthorizationHeader;
 
-public class ForbiddenAccessDeniedStrategy implements AccessDeniedStrategy {
-    @Override
-    public void handle(final AuthorizationHeader authorizationHeader, final SecurityFilterProviderCollection providers,
-            final HttpServletResponse response) throws IOException {
+public interface AccessDeniedHandler {
 
-        if (!(authorizationHeader.isNtlmType1PostAuthorizationHeader() || authorizationHeader.isNtlmType1Message()
-                || authorizationHeader.isSPNegTokenInitMessage() || authorizationHeader.isSPNegTokenArgMessage())) {
-            providers.sendUnauthorized(response);
-        }
+    /**
+     * Decide what to do with
+     * 
+     * @param authorizationHeader
+     *            the parsed and processed Authorization Header created by a SecurityRequestFilter
+     * @param providers
+     *            the Security Providers configured on the Filter
+     * @param response
+     *            this is used to send the details to the client
+     * @throws IOException
+     *             is thrown while trying to write on the response to the client
+     */
+    void handle(AuthorizationHeader authorizationHeader, SecurityFilterProviderCollection providers,
+            HttpServletResponse response) throws IOException;
 
-        if (authorizationHeader.isLogonAttempt()) {
-            /* response.setHeader("Connection", "close"); */
-            response.setHeader("Connection", "close");
-        } else {
+    static void sendUnauthorized(AuthorizationHeader authorizationHeader, SecurityFilterProviderCollection provider,
+            HttpServletResponse response, int errorCode) throws IOException {
+        if (authorizationHeader.isNull()) {
+            provider.sendAuthorizationHeaders(response);
             response.setHeader("Connection", "keep-alive");
+            response.sendError(errorCode);
         }
-        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        if (authorizationHeader.isLogonAttempt() && response.getHeader("Connection") == null) {
+            response.setHeader("Connection", "close");
+            response.sendError(errorCode);
+        }
+        if (authorizationHeader.isSPNegTokenArgMessage()
+                || authorizationHeader.isSPNegTokenInitMessage() && response.getHeader("Connection") == null) {
+            response.sendError(errorCode);
+        }
         response.flushBuffer();
     }
+
 }

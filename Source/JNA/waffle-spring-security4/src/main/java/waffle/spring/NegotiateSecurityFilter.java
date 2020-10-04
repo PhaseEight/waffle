@@ -208,7 +208,7 @@ public class NegotiateSecurityFilter extends GenericFilterBean {
      */
     protected void sendUnauthorized(final HttpServletResponse response, final boolean close) {
         try {
-            this.provider.sendUnauthorized(response);
+            this.provider.sendAuthorizationHeaders(response);
             if (close) {
                 response.setHeader("Connection", "close");
             } else {

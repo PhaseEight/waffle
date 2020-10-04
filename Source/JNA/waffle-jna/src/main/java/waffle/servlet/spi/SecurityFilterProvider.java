@@ -38,7 +38,7 @@ import waffle.windows.auth.IWindowsIdentity;
 public interface SecurityFilterProvider {
 
     /** The Constant WWW_AUTHENTICATE. */
-    String WWW_AUTHENTICATE = "WWW-Authenticate";
+    static final String WWW_AUTHENTICATE = "WWW-Authenticate";
 
     /**
      * Add authentication method headers.
@@ -46,7 +46,7 @@ public interface SecurityFilterProvider {
      * @param response
      *            Http Response.
      */
-    void sendUnauthorized(final HttpServletResponse response);
+    void addAuthorizationHeader(final HttpServletResponse response);
 
     /**
      * Returns true if despite having a principal authentication needs to happen.

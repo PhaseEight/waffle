@@ -138,9 +138,6 @@ public class SecurityFilterProviderCollection {
     }
 
     public SecurityFilterProvider get(final int pos) {
-        if (providers == null) {
-            return null;
-        }
         return providers.get(pos);
     }
 
@@ -191,9 +188,9 @@ public class SecurityFilterProviderCollection {
      * @param response
      *            Http Response
      */
-    public void sendUnauthorized(final HttpServletResponse response) {
+    public void sendAuthorizationHeaders(final HttpServletResponse response) {
         for (final SecurityFilterProvider provider : this.providers) {
-            provider.sendUnauthorized(response);
+            provider.addAuthorizationHeader(response);
         }
     }
 

@@ -191,7 +191,7 @@ public class MixedAuthenticatorTests {
      */
     @Test
     void testGetInfo() {
-        assertThat(this.authenticator.getInfo().length()).isGreaterThan(0);
+        assertThat(this.authenticator.getInfo().length()).isPositive();
     }
 
     /**
@@ -240,7 +240,7 @@ public class MixedAuthenticatorTests {
                 final String continueToken = response.getHeader("WWW-Authenticate")
                         .substring(securityPackage.length() + 1);
                 final byte[] continueTokenBytes = Base64.getDecoder().decode(continueToken);
-                assertThat(continueTokenBytes.length).isGreaterThan(0);
+                assertThat(continueTokenBytes.length).isPositive();
                 final ManagedSecBufferDesc continueTokenBuffer = new ManagedSecBufferDesc(Sspi.SECBUFFER_TOKEN,
                         continueTokenBytes);
                 clientContext.initialize(clientContext.getHandle(), continueTokenBuffer,

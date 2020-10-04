@@ -80,7 +80,7 @@ public class NegotiateSecurityFilter implements Filter {
     private PrincipalFormat roleFormat = PrincipalFormat.FQN;
 
     /** The providers. */
-    private SecurityFilterProviderCollection providers;
+    private SecurityFilterProviderCollection provider;
 
     /** The auth. */
     private IWindowsAuthProvider auth;
@@ -178,7 +178,7 @@ public class NegotiateSecurityFilter implements Filter {
             // log the user in using the token
             IWindowsIdentity windowsIdentity;
             try {
-                windowsIdentity = this.providers.doFilter(request, response);
+                windowsIdentity = this.provider.doFilter(request, response);
                 if (windowsIdentity == null) {
                     return;
                 }
@@ -280,7 +280,7 @@ public class NegotiateSecurityFilter implements Filter {
             return false;
         }
 
-        if (this.providers.isPrincipalException(request)) {
+        if (this.provider.isPrincipalException(request)) {
             // the providers signal to authenticate despite an existing principal, eg. NTLM post
             return false;
         }
@@ -389,13 +389,13 @@ public class NegotiateSecurityFilter implements Filter {
         }
 
         if (providerNames != null) {
-            this.providers = new SecurityFilterProviderCollection(providerNames, this.auth);
+            this.provider = new SecurityFilterProviderCollection(providerNames, this.auth);
         }
 
         // create default providers if none specified
-        if (this.providers == null) {
+        if (this.provider == null) {
             NegotiateSecurityFilter.LOGGER.debug("initializing default security filter providers");
-            this.providers = new SecurityFilterProviderCollection(this.auth);
+            this.provider = new SecurityFilterProviderCollection(this.auth);
         }
 
         // apply provider implementation parameters
@@ -408,7 +408,7 @@ public class NegotiateSecurityFilter implements Filter {
                     NegotiateSecurityFilter.LOGGER.debug("setting {}, {}={}", classAndParameter[0],
                             classAndParameter[1], implParameter.getValue());
 
-                    final SecurityFilterProvider provider = this.providers.getByClassName(classAndParameter[0]);
+                    final SecurityFilterProvider provider = this.provider.getByClassName(classAndParameter[0]);
                     provider.initParameter(classAndParameter[1], implParameter.getValue());
 
                 } catch (final ClassNotFoundException e) {
@@ -480,7 +480,7 @@ public class NegotiateSecurityFilter implements Filter {
      */
     private void sendUnauthorized(final HttpServletResponse response, final boolean close) {
         try {
-            this.providers.sendUnauthorized(response);
+            this.provider.sendUnauthorized(response);
             if (close) {
                 response.setHeader("Connection", "close");
             } else {
@@ -546,7 +546,7 @@ public class NegotiateSecurityFilter implements Filter {
      * @return A collection of security filter providers.
      */
     public SecurityFilterProviderCollection getProviders() {
-        return this.providers;
+        return this.provider;
     }
 
     private static boolean isWindows() {
