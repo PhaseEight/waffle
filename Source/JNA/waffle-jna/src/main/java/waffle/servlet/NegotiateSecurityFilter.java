@@ -612,7 +612,9 @@ public class NegotiateSecurityFilter implements Filter {
         } else if ("HttpServletRequest.SC_FORBIDDEN".equalsIgnoreCase(accessDeniedStrategy)) {
             this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
         } else {
-            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s; Supported values are HttpServletRequest.SC_UNAUTHORIZED and HttpServletRequest.SC_FORBIDDEN", accessDeniedStrategy));
+            throw new ServletException(String.format(
+                    "Unsupported Access Denied Strategy: %s; Supported values are HttpServletRequest.SC_UNAUTHORIZED and HttpServletRequest.SC_FORBIDDEN",
+                    accessDeniedStrategy));
         }
 
     }

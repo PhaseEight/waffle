@@ -49,44 +49,44 @@ class NegotiateSecurityFilterTest {
     private NegotiateSecurityFilter negotiateSecurityFilter;
 
     /** The init parameter names. */
-    private final Enumeration<String> initParameterNamesExcludes = Collections.enumeration(new java.util.ArrayList<String>() {
+    private final Enumeration<String> initParameterNamesExcludes = Collections
+            .enumeration(new java.util.ArrayList<String>() {
 
-        /** The Constant serialVersionUID. */
-        private static final long serialVersionUID = 1L;
+                /** The Constant serialVersionUID. */
+                private static final long serialVersionUID = 1L;
 
-        {
-            this.add("principalFormat");
-            this.add("principalFormat");
-            this.add("roleFormat");
-            this.add("allowGuestLogin");
-            this.add("impersonate");
-            this.add("securityFilterProviders");
-            this.add("excludePatterns");
-            this.add("excludeCorsPreflight");
-            this.add("excludeBearerAuthorization");
-        }
-    });
+                {
+                    this.add("principalFormat");
+                    this.add("principalFormat");
+                    this.add("roleFormat");
+                    this.add("allowGuestLogin");
+                    this.add("impersonate");
+                    this.add("securityFilterProviders");
+                    this.add("excludePatterns");
+                    this.add("excludeCorsPreflight");
+                    this.add("excludeBearerAuthorization");
+                }
+            });
 
     /** The init parameter names. */
-    private final Enumeration<String> initParameterNamesSupport = Collections.enumeration(new java.util.ArrayList<String>() {
+    private final Enumeration<String> initParameterNamesSupport = Collections
+            .enumeration(new java.util.ArrayList<String>() {
 
-        /** The Constant serialVersionUID. */
-        private static final long serialVersionUID = 1L;
+                /** The Constant serialVersionUID. */
+                private static final long serialVersionUID = 1L;
 
-        {
-            this.add("principalFormat");
-            this.add("principalFormat");
-            this.add("roleFormat");
-            this.add("allowGuestLogin");
-            this.add("impersonate");
-            this.add("securityFilterProviders");
-            this.add("excludePatterns");
-            this.add("supportCorsPreflight");
-            this.add("supportBearerAuthorization");
-        }
-    });
-
-
+                {
+                    this.add("principalFormat");
+                    this.add("principalFormat");
+                    this.add("roleFormat");
+                    this.add("allowGuestLogin");
+                    this.add("impersonate");
+                    this.add("securityFilterProviders");
+                    this.add("excludePatterns");
+                    this.add("supportCorsPreflight");
+                    this.add("supportBearerAuthorization");
+                }
+            });
 
     /**
      * Test cors and bearer authorization I init.
@@ -145,7 +145,6 @@ class NegotiateSecurityFilterTest {
 
     }
 
-
     /**
      * Test cors and bearer authorization I init.
      *
@@ -202,8 +201,6 @@ class NegotiateSecurityFilterTest {
         };
 
     }
-
-
 
     /**
      * Test exclude cors and OAUTH bearer authorization do filter.
