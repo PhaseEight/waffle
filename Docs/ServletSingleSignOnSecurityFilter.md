@@ -32,18 +32,22 @@ Filter Options
 
 The filter can be configured with the following `init-param` options. 
 
-* disableSSO: Allows for the enabling/disabling of Single-SignOn Security Filter.This is useful if you require to bypass the SSO process for troubleshooting/diagnostics and provide login by some other means.
-* principalFormat: Specifies the name format for the principal.
-* roleFormat: Specifies the name format for the role.
-* allowGuestLogin: Allow guest login. When true and the system's Guest account is enabled, any invalid login succeeds as Guest. Note that while the default value of `allowGuestLogin` is true, it is recommended that you disable the system's Guest account to disallow Guest login. This option is provided for systems where you don't have administrative privileges. 
-* authProvider: A class that implements `IWindowsAuthProvider` and has a parameterless constructor. 
-* securityFilterProviders: A list of security filter providers. By default, both `BasicSecurityFilterProvider` and `NegotiateSecurityFilterProvider` will be loaded. 
-* waffle.servlet.spi.NegotiateSecurityFilterProvider/protocols: A list of security protocols supported by the `NegotiateSecurityFilterProvider`. Can be one of or a combination of Negotiate and NTLM. 
-* waffle.servlet.spi.BasicSecurityFilterProvider/realm: The name of the Realm for BASIC authentication. 
-* impersonate: Allow impersonation. When true the remote user will be impersonated. Note that there is no mapping between the Windows native threads, under which the impersonation takes place, and the Java threads. Thus you'll need to use Windows native APIs to perform impersonated actions. Any action done in Java will still be performed with the user account running the servlet container. 
-* excludePatterns: Url patterns to exclude from the filter, uses regex for pattern matching
-* excludeCorsPreflight: exclude CORS preflight requests. When a request is CORS preflight web security which is an OPTIONS request with 3 valid CORS preflight headers and will not include credentials i.e. credentials would be the method in a CORS preflight request @see https://fetch.spec.whatwg.org/#methods   
-* excludeBearerAuthorization:  exclude requests that include a Bearer Authorization header. if your API has a mix of Windows and OAUTH covered URIs
+* `disableSSO:` Prefer the use of the <strong>enabled</strong> property. Allows for the enabling/disabling of Single Sign-On Security Filter. This is useful if you require to bypass the SSO process for troubleshooting/diagnostics or provide login by some other means. default: false
+* `enabled:` prefer usage over disableSSO. Allows the disabling of the Single Sign-On Security Filter. This is useful if you require to disable the SSO process for troubleshooting/diagnostics or provide login by some other means. default: true
+* `principalFormat:` Specifies the name format for the principal.
+* `roleFormat:` Specifies the name format for the role.
+* `allowGuestLogin:` Allow guest login. When true and the system's Guest account is enabled, any invalid login succeeds as Guest. Note that while the default value of `allowGuestLogin` is true, It is recommended that you disable the system's Guest account to disallow Guest login. This option is provided for systems where you don't have administrative privileges. 
+* `authProvider:` A class that implements `IWindowsAuthProvider` and has a parameterless constructor. 
+* `securityFilterProviders:` A list of security filter providers. `waffle.servlet.spi.BasicSecurityFilterProvider` and or `waffle.servlet.spi.NegotiateSecurityFilterProvider`. By default, both will be loaded.
+* `waffle.servlet.spi.NegotiateSecurityFilterProvider/protocols:` A list of security protocols supported by the `NegotiateSecurityFilterProvider`. Can be one of or a combination of Negotiate and NTLM.
+* `waffle.servlet.spi.BasicSecurityFilterProvider/realm:` The name of the Realm for BASIC authentication. 
+* `waffle.servlet.spi.BasicSecurityFilterProvider/charset:` The CharSet to be used in the Challenge UTF-8 or US-ASCII default is CharSet.UTF_8:UTF-8.
+* `impersonate:` Allow impersonation. When true the remote user will be impersonated. Note that there is no mapping between the Windows native threads, under which the impersonation takes place, and the Java threads. Thus you'll need to use Windows native APIs to perform impersonated actions. Any action done in Java will still be performed with the user account running the servlet container. 
+* `excludePatterns:` Url patterns to exclude from the filter, uses regex for pattern matching.
+* `supportCorsPreflight:` alias - excludeCorsPreflight: continue when requests are CORS preflight requests. When a request is CORS preflight web security which is an OPTIONS request with 3 valid CORS preflight headers and does not include credentials i.e. credentials would be the method in a CORS preflight request @see https://fetch.spec.whatwg.org/#methods.   
+* `supportBearerAuthorization:` alias - excludeBearerAuthorization: continue when a requests includes a Bearer Authorization header. Continues without Windows Authentication if the request contains a Bearer: Authentication Package. When an API has a mix of Windows and OAUTH covered URIs. renamed from excludeBearerAuthorization
+* `accessDeniedStrategy`: Specify the `SC_UNAUTHORIZED` or `SC_FORBIDDEN` to be used when Authentication fails. Default is SC_UNAUTHORIZED; use SC_FORBIDDEN to hide the presence of the requested resource. `HttpServletRequest.SC_UNAUTHORIZED` or `HttpServletRequest.SC_FORBIDDEN`
+ 
 
 Filter Configuration Example
 ----------------------------
@@ -53,8 +57,12 @@ Filter Configuration Example
   <filter-name>SecurityFilter</filter-name>
   <filter-class>waffle.servlet.NegotiateSecurityFilter</filter-class>   
   <init-param>
-      <param-name>disableSSO</param-name>
+      <param-name>enabled</param-name>
       <param-value>true</param-value>
+  </init-param>
+  <init-param>
+      <param-name>accessDeniedStrategy</param-name>
+      <param-value>SC_FORBIDDEN</param-value>
   </init-param>
   <init-param>
       <param-name>principalFormat</param-name>
@@ -73,7 +81,7 @@ Filter Configuration Example
       <param-value>true</param-value>
   </init-param>
   <init-param>
-      <param-name>excludeCorsPreflight</param-name>
+      <param-name>supportCorsPreflight</param-name>
       <param-value>true</param-value>
   </init-param>
   <init-param>
@@ -105,6 +113,10 @@ Filter Configuration Example
   <init-param>
       <param-name>waffle.servlet.spi.BasicSecurityFilterProvider/realm</param-name>
       <param-value>WaffleFilterDemo</param-value>
+  </init-param>
+  <init-param>
+      <param-name>waffle.servlet.spi.BasicSecurityFilterProvider/charset</param-name>
+      <param-value>US-ASCII</param-value>
   </init-param>
 </filter>
 ```

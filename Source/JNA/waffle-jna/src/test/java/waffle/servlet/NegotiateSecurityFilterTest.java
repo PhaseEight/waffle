@@ -49,7 +49,7 @@ class NegotiateSecurityFilterTest {
     private NegotiateSecurityFilter negotiateSecurityFilter;
 
     /** The init parameter names. */
-    private final Enumeration<String> initParameterNames = Collections.enumeration(new java.util.ArrayList<String>() {
+    private final Enumeration<String> initParameterNamesExcludes = Collections.enumeration(new java.util.ArrayList<String>() {
 
         /** The Constant serialVersionUID. */
         private static final long serialVersionUID = 1L;
@@ -67,6 +67,27 @@ class NegotiateSecurityFilterTest {
         }
     });
 
+    /** The init parameter names. */
+    private final Enumeration<String> initParameterNamesSupport = Collections.enumeration(new java.util.ArrayList<String>() {
+
+        /** The Constant serialVersionUID. */
+        private static final long serialVersionUID = 1L;
+
+        {
+            this.add("principalFormat");
+            this.add("principalFormat");
+            this.add("roleFormat");
+            this.add("allowGuestLogin");
+            this.add("impersonate");
+            this.add("securityFilterProviders");
+            this.add("excludePatterns");
+            this.add("supportCorsPreflight");
+            this.add("supportBearerAuthorization");
+        }
+    });
+
+
+
     /**
      * Test cors and bearer authorization I init.
      *
@@ -76,13 +97,13 @@ class NegotiateSecurityFilterTest {
      *             the exception
      */
     @Test
-    void testCorsAndBearerAuthorizationI_init(@Mocked final FilterConfig filterConfig) throws Exception {
+    void testCorsAndBearerAuthorizationExcludes_init(@Mocked final FilterConfig filterConfig) throws Exception {
         this.getClass().getClassLoader().getResource("logback.xml");
 
         new Expectations() {
             {
                 filterConfig.getInitParameterNames();
-                this.result = NegotiateSecurityFilterTest.this.initParameterNames;
+                this.result = NegotiateSecurityFilterTest.this.initParameterNamesExcludes;
                 filterConfig.getInitParameter("principalFormat");
                 this.result = "fqn";
                 filterConfig.getInitParameter("roleFormat");
@@ -105,9 +126,9 @@ class NegotiateSecurityFilterTest {
         this.negotiateSecurityFilter.init(filterConfig);
 
         final Field excludeCorsPreflight = this.negotiateSecurityFilter.getClass()
-                .getDeclaredField("excludeCorsPreflight");
+                .getDeclaredField("supportCorsPreflight");
         final Field excludeBearerAuthorization = this.negotiateSecurityFilter.getClass()
-                .getDeclaredField("excludeBearerAuthorization");
+                .getDeclaredField("supportBearerAuthorization");
         excludeCorsPreflight.setAccessible(true);
         excludeBearerAuthorization.setAccessible(true);
         Assertions.assertTrue(excludeCorsPreflight.getBoolean(this.negotiateSecurityFilter));
@@ -123,6 +144,66 @@ class NegotiateSecurityFilterTest {
         };
 
     }
+
+
+    /**
+     * Test cors and bearer authorization I init.
+     *
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
+     */
+    @Test
+    void testCorsAndBearerAuthorizationSupport_init(@Mocked final FilterConfig filterConfig) throws Exception {
+        this.getClass().getClassLoader().getResource("logback.xml");
+
+        new Expectations() {
+            {
+                filterConfig.getInitParameterNames();
+                this.result = NegotiateSecurityFilterTest.this.initParameterNamesSupport;
+                filterConfig.getInitParameter("principalFormat");
+                this.result = "fqn";
+                filterConfig.getInitParameter("roleFormat");
+                this.result = "fqn";
+                filterConfig.getInitParameter("allowGuestLogin");
+                this.result = "false";
+                filterConfig.getInitParameter("impersonate");
+                this.result = "true";
+                filterConfig.getInitParameter("securityFilterProviders");
+                this.result = "waffle.servlet.spi.BasicSecurityFilterProvider\nwaffle.servlet.spi.NegotiateSecurityFilterProvider";
+                filterConfig.getInitParameter("excludePatterns");
+                this.result = ".*/peter/.*";
+                filterConfig.getInitParameter("supportCorsPreflight");
+                this.result = "true";
+                filterConfig.getInitParameter("supportBearerAuthorization");
+                this.result = "true";
+            }
+        };
+
+        this.negotiateSecurityFilter.init(filterConfig);
+
+        final Field supportCorsPreflight = this.negotiateSecurityFilter.getClass()
+                .getDeclaredField("supportCorsPreflight");
+        final Field supportBearerAuthorization = this.negotiateSecurityFilter.getClass()
+                .getDeclaredField("supportBearerAuthorization");
+        supportCorsPreflight.setAccessible(true);
+        supportBearerAuthorization.setAccessible(true);
+        Assertions.assertTrue(supportCorsPreflight.getBoolean(this.negotiateSecurityFilter));
+        Assertions.assertTrue(supportBearerAuthorization.getBoolean(this.negotiateSecurityFilter));
+        Assertions.assertTrue(this.negotiateSecurityFilter.isImpersonate());
+        Assertions.assertFalse(this.negotiateSecurityFilter.isAllowGuestLogin());
+
+        new Verifications() {
+            {
+                filterConfig.getInitParameter(this.withInstanceOf(String.class));
+                this.minTimes = 8;
+            }
+        };
+
+    }
+
+
 
     /**
      * Test exclude cors and OAUTH bearer authorization do filter.
@@ -147,7 +228,7 @@ class NegotiateSecurityFilterTest {
         new Expectations() {
             {
                 filterConfig.getInitParameterNames();
-                this.result = NegotiateSecurityFilterTest.this.initParameterNames;
+                this.result = NegotiateSecurityFilterTest.this.initParameterNamesSupport;
                 filterConfig.getInitParameter("principalFormat");
                 this.result = "fqn";
                 filterConfig.getInitParameter("roleFormat");
@@ -160,9 +241,9 @@ class NegotiateSecurityFilterTest {
                 this.result = "waffle.servlet.spi.BasicSecurityFilterProvider\nwaffle.servlet.spi.NegotiateSecurityFilterProvider";
                 filterConfig.getInitParameter("excludePatterns");
                 this.result = ".*/peter/.*";
-                filterConfig.getInitParameter("excludeCorsPreflight");
+                filterConfig.getInitParameter("supportCorsPreflight");
                 this.result = "true";
-                filterConfig.getInitParameter("excludeBearerAuthorization");
+                filterConfig.getInitParameter("supportBearerAuthorization");
                 this.result = "true";
                 CorsPreFlightCheck.isPreflight(request);
                 this.result = true;

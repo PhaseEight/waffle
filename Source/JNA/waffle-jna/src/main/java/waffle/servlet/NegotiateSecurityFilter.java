@@ -48,11 +48,11 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import waffle.servlet.spi.AccessDeniedHandler;
-import waffle.servlet.spi.ForbiddenAccessDeniedHandler;
+import waffle.servlet.spi.AccessDeniedStrategy;
+import waffle.servlet.spi.ForbiddenAccessDeniedStrategy;
 import waffle.servlet.spi.SecurityFilterProvider;
 import waffle.servlet.spi.SecurityFilterProviderCollection;
-import waffle.servlet.spi.UnauthorizedAccessDeniedHandler;
+import waffle.servlet.spi.UnauthorizedAccessDeniedStrategy;
 import waffle.util.AuthorizationHeader;
 import waffle.util.CorsPreFlightCheck;
 import waffle.windows.auth.IWindowsAuthProvider;
@@ -106,14 +106,14 @@ public class NegotiateSecurityFilter implements Filter {
     private boolean impersonate;
 
     /** The exclusion for bearer authorization flag. */
-    private boolean excludeBearerAuthorization;
+    private boolean supportBearerAuthorization;
 
     /** The exclusions for cors pre flight flag. */
-    private boolean excludeCorsPreflight;
+    private boolean supportCorsPreflight;
 
     private boolean enabled = true;
 
-    private AccessDeniedHandler accessDeniedHandler = new UnauthorizedAccessDeniedHandler();
+    private AccessDeniedStrategy accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
 
     /**
      * Instantiates a new negotiate security filter.
@@ -164,7 +164,7 @@ public class NegotiateSecurityFilter implements Filter {
         }
 
         // If exclude cores pre-flight and is pre flight, resume the filter chain
-        if (this.isExcludeCorsPreflight() && CorsPreFlightCheck.isPreflight(request)) {
+        if (this.supportCorsPreflight() && CorsPreFlightCheck.isPreflight(request)) {
             NegotiateSecurityFilter.LOGGER.info("[waffle.servlet.NegotiateSecurityFilter] CORS preflight");
             chain.doFilter(sreq, sres);
             return;
@@ -172,8 +172,8 @@ public class NegotiateSecurityFilter implements Filter {
 
         final AuthorizationHeader authorizationHeader = new AuthorizationHeader(request);
 
-        // If exclude bearer authorization and is bearer authorization, result the filter chain
-        if (this.isExcludeBearerAuthorization() && authorizationHeader.isBearerAuthorizationHeader()) {
+        // If exclude bearer authorization and is bearer authorization, resume the filter chain
+        if (this.supportBearerAuthorization() && authorizationHeader.isBearerAuthorizationHeader()) {
             NegotiateSecurityFilter.LOGGER.info("[waffle.servlet.NegotiateSecurityFilter] Authorization: Bearer");
             chain.doFilter(sreq, sres);
             return;
@@ -354,11 +354,8 @@ public class NegotiateSecurityFilter implements Filter {
                 NegotiateSecurityFilter.LOGGER.debug("Init Param: '{}={}'", parameterName, parameterValue);
                 InitParameter initParam = InitParameter.get(parameterName);
                 switch (initParam) {
-                    case ACCESS_DENIED_HANDLER:
-                        this.setAccessDeniedHandler(parameterValue);
-                        break;
-                    case LOGON_ERROR_RESPONSE_CODE:
-                        this.setAccessDeniedHandler(Integer.parseInt(parameterValue));
+                    case ACCESS_DENIED_STRATEGY:
+                        this.setAccessDeniedStrategy(parameterValue);
                         break;
                     case DISABLE_SSO:
                         this.setEnabled(!Boolean.parseBoolean(parameterValue));
@@ -388,10 +385,12 @@ public class NegotiateSecurityFilter implements Filter {
                         this.excludePatterns = parameterValue.split("\\s+", -1);
                         break;
                     case EXCLUDE_CORS_PREFLIGHT:
-                        this.setExcludeCorsPreflight(Boolean.parseBoolean(parameterValue));
+                    case SUPPORT_CORS_PREFLIGHT:
+                        this.setSupportCorsPreflight(Boolean.parseBoolean(parameterValue));
                         break;
+                    case SUPPORT_BEARER_AUTHORIZATION:
                     case EXCLUDE_BEARER_AUTHORIZATION:
-                        this.setExcludeBearerAuthorization(Boolean.parseBoolean(parameterValue));
+                        this.setSupportBearerAuthorization(Boolean.parseBoolean(parameterValue));
                         break;
                     case PROVIDER_PARAMETER:
                         implParameters.put(parameterName, parameterValue);
@@ -509,7 +508,7 @@ public class NegotiateSecurityFilter implements Filter {
     private void accessDenied(final AuthorizationHeader authorizationHeader,
             final SecurityFilterProviderCollection providers, final HttpServletResponse response) {
         try {
-            accessDeniedHandler.handle(authorizationHeader, providers, response);
+            accessDeniedStrategy.handle(authorizationHeader, providers, response);
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -576,12 +575,12 @@ public class NegotiateSecurityFilter implements Filter {
      *
      * @return true if Bearer Authorization is ignored, false otherwise
      */
-    public boolean isExcludeBearerAuthorization() {
-        return this.excludeBearerAuthorization;
+    public boolean supportBearerAuthorization() {
+        return this.supportBearerAuthorization;
     }
 
-    public void setExcludeBearerAuthorization(boolean excludeBearerAuthorization) {
-        this.excludeBearerAuthorization = excludeBearerAuthorization;
+    public void setSupportBearerAuthorization(boolean supportBearerAuthorization) {
+        this.supportBearerAuthorization = supportBearerAuthorization;
     }
 
     /**
@@ -589,12 +588,12 @@ public class NegotiateSecurityFilter implements Filter {
      *
      * @return true if Bearer Authorization is ignored, false otherwise
      */
-    public boolean isExcludeCorsPreflight() {
-        return this.excludeCorsPreflight;
+    public boolean supportCorsPreflight() {
+        return this.supportCorsPreflight;
     }
 
-    public void setExcludeCorsPreflight(boolean excludeCorsPreflight) {
-        this.excludeCorsPreflight = excludeCorsPreflight;
+    public void setSupportCorsPreflight(boolean supportCorsPreflight) {
+        this.supportCorsPreflight = supportCorsPreflight;
     }
 
     /**
@@ -602,30 +601,18 @@ public class NegotiateSecurityFilter implements Filter {
      *
      * @return accessDeniedHandler
      */
-    public AccessDeniedHandler getAccessDeniedHandler() {
-        return this.accessDeniedHandler;
+    public AccessDeniedStrategy getAccessDeniedStrategy() {
+        return this.accessDeniedStrategy;
     }
 
-    public void setAccessDeniedHandler(String accessDeniedHandler) throws ServletException {
+    public void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException {
 
-        if ("SC_UNAUTHORIZED".equalsIgnoreCase(accessDeniedHandler)) {
-            this.accessDeniedHandler = new UnauthorizedAccessDeniedHandler();
-        } else if ("SC_FORBIDDEN".equalsIgnoreCase(accessDeniedHandler)) {
-            this.accessDeniedHandler = new ForbiddenAccessDeniedHandler();
+        if ("HttpServletRequest.SC_UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
+            this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
+        } else if ("HttpServletRequest.SC_FORBIDDEN".equalsIgnoreCase(accessDeniedStrategy)) {
+            this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
         } else {
-            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedHandler));
-        }
-
-    }
-
-    public void setAccessDeniedHandler(int accessDeniedHandler) throws ServletException {
-
-        if (accessDeniedHandler == HttpServletResponse.SC_UNAUTHORIZED) {
-            this.accessDeniedHandler = new UnauthorizedAccessDeniedHandler();
-        } else if (accessDeniedHandler == HttpServletResponse.SC_FORBIDDEN) {
-            this.accessDeniedHandler = new ForbiddenAccessDeniedHandler();
-        } else {
-            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s", accessDeniedHandler));
+            throw new ServletException(String.format("Unsupported Access Denied Strategy: %s; Supported values are HttpServletRequest.SC_UNAUTHORIZED and HttpServletRequest.SC_FORBIDDEN", accessDeniedStrategy));
         }
 
     }
@@ -640,8 +627,7 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     public enum InitParameter {
-        LOGON_ERROR_RESPONSE_CODE("logonErrorResponseCode"),
-        ACCESS_DENIED_HANDLER("accessDeniedHandler"),
+        ACCESS_DENIED_STRATEGY("accessDeniedStrategy"),
         ENABLED("enabled"),
         DISABLE_SSO("disableSSO"),
         PRINCIPAL_FORMAT("principalFormat"),
@@ -652,7 +638,9 @@ public class NegotiateSecurityFilter implements Filter {
         AUTH_PROVIDER("authProvider"),
         EXCLUDE_PATTERNS("excludePatterns"),
         EXCLUDE_CORS_PREFLIGHT("excludeCorsPreflight"),
-        EXCLUDE_BEARER_AUTHORIZATION("excludeBearerAuthorization"),
+        SUPPORT_CORS_PREFLIGHT("supportCorsPreflight"),
+        SUPPORT_BEARER_AUTHORIZATION("excludeBearerAuthorization"),
+        EXCLUDE_BEARER_AUTHORIZATION("supportBearerAuthorization"),
         PROVIDER_PARAMETER("provider"),
         UNSUPPORTED("unsupported");
 

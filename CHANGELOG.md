@@ -9,20 +9,24 @@
     - waffle.servlet.NegotiateSecurityFilter will continue in non-Windows OS
     - updated tests from .isGreatherThan(0) to use .isPositive()
 
-* [#638](https://github.com/Waffle/waffle/issues/638) add waffle.servlet.spi.AccessDeniedHandler similar to Spring CustomAccessDeniedHandler
-    - UnauthorizedAccessDeniedHandler makes everything work as default with 401
-    - ForbiddenAccessDeniedHandler makes everything will return a 403 thereby helping hide the fact that the resource exists
-    - added InitParameter enumeration to NegotiateSecurityFilter to use in parameter validation
-    - provide a method to identify unsupported parameters.__
-    - moved NegotiateSecurityFilterProvider.WWW_AUTHENTICATE to SecurityFilterProvider to be usable by BasicSecurityFilterProvider
-    - renamed sendUnauthorized to addAuthorizationHeader to align with the description and what the provider does for WWW-Authentication
-    - Add tests to NegotiateSecurityFilterProviderTests to waffle-tests waffale.sevlet
-    - Moved CorsAwareNegotiateSecurityFilterTest to waffle-tests waffale.sevlet.CorsAwareNegotiateSecurityFilterTest     
-    - Implemented some code critique guides for import and redundant code and brackets
+* [#638](https://github.com/Waffle/waffle/issues/638) add waffle.servlet.spi.AccessDeniedStrategy similar to Shiro AccessDeniedStrategy
+    - AccessDeniedStrategy provides the ability to specify the ERROR_CODE of the failed authentication.
+      - <strong>UnauthorizedAccessDeniedStrategy</strong> is the default and not changes to existing functionality (HttpServletRequest.SC_UNAUTHORIZED 401).
+      - <strong>ForbiddenAccessDeniedStrategy</strong> failed authentication will return an Access Forbidden (HttpServletRequest.SC_FORBIDDEN 403); helping hide the fact that the resource exists.
+    - added InitParameter enumeration to NegotiateSecurityFilter to use in parameter validation.
+    - provide a method to identify unsupported parameters.
+    - moved NegotiateSecurityFilterProvider.WWW_AUTHENTICATE to SecurityFilterProvider to be usable by BasicSecurityFilterProvider.
+    - renamed sendUnauthorized to addAuthorizationHeader to align with the description and what the provider does for WWW-Authentication.
+    - Add tests to NegotiateSecurityFilterProviderTests to waffle-tests waffale.sevlet.
+    - Moved CorsAwareNegotiateSecurityFilterTest to waffle-tests waffale.sevlet.CorsAwareNegotiateSecurityFilterTest.
+    - Implemented some code critique guides for import and redundant code and brackets.
+    - renamed excludeCorsPreflight to supportCorsPreflight - this better describes what the filter does if the request contains an OPTIONS Request Method withe the 3 CORS Pre-flight Header Parameters.
+    - renamed excludeBearerAuthorization to supportBearerAuthorization - this better describes what the filter does if the request contains a Bearer Authorization header. 
+    
 
 * [#639](https://github.com/Waffle/waffle/issues/639) add enable allow the disabling of filters; useful where change management does not permit the edit of web.xml
     - filters are enabled by default
-    - disableSSO:true will set <strong>enable</strong> to <font style="color:blue">false</font>
+    - disableSSO:true will set `enabled` to false
   
 
 2.3.0 (6/19/2020)

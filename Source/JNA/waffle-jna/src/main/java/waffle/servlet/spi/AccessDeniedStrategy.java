@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import waffle.util.AuthorizationHeader;
 
-public interface AccessDeniedHandler {
+public interface AccessDeniedStrategy {
 
     /**
      * Decide what to do with

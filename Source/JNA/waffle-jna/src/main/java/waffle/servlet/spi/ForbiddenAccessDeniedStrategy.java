@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import waffle.util.AuthorizationHeader;
 
-public class ForbiddenAccessDeniedHandler implements AccessDeniedHandler {
+public class ForbiddenAccessDeniedStrategy implements AccessDeniedStrategy {
 
     final private static int errorCode = HttpServletResponse.SC_FORBIDDEN;
 
@@ -37,7 +37,7 @@ public class ForbiddenAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(final AuthorizationHeader authorizationHeader, final SecurityFilterProviderCollection providers,
             final HttpServletResponse response) throws IOException {
 
-        AccessDeniedHandler.sendUnauthorized(authorizationHeader, providers, response, this.errorCode);
+        AccessDeniedStrategy.sendUnauthorized(authorizationHeader, providers, response, this.errorCode);
     }
 
 }
