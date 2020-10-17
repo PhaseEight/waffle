@@ -57,8 +57,8 @@ public interface AccessDeniedStrategy {
             response.setHeader("Connection", "close");
             response.sendError(errorCode);
         }
-        if ((authorizationHeader.isSPNegTokenArgMessage()
-                || authorizationHeader.isSPNegTokenInitMessage()) && response.getHeader("Connection") == null) {
+        if ((authorizationHeader.isSPNegTokenArgMessage() || authorizationHeader.isSPNegTokenInitMessage())
+                && response.getHeader("Connection") == null) {
             response.sendError(errorCode);
         }
         response.flushBuffer();
