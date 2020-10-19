@@ -5,28 +5,28 @@
 * Remove use of Group interface and directly use our implementation to allow build on jdk14/15 (not confirmed JAAS works, just compiles)
 * Cleanup error prone code usage resulting in header treatment without trailing '\n'
 
-* [#637](https://github.com/Waffle/waffle/issues/637) Use JNA OS Type to determine OS; Platform.isWindows()
-    - waffle.servlet.NegotiateSecurityFilter will continue in non-Windows OS
-    - updated tests from .isGreatherThan(0) to use .isPositive()
+* [#637](https://github.com/Waffle/waffle/issues/637) Use JNA OS Type to determine OS; **`Platform.isWindows()`**
+    - `**waffle.servlet.NegotiateSecurityFilter**` will continue in non-Windows OS
+    - Updated tests from .isGreatherThan(0) to use .isPositive()
 
-* [#638](https://github.com/Waffle/waffle/issues/638) add waffle.servlet.spi.AccessDeniedStrategy similar to Shiro AccessDeniedStrategy
+* [#638](https://github.com/Waffle/waffle/issues/638) add **`waffle.servlet.spi.AccessDeniedStrategy`** similar to Shiro AccessDeniedStrategy
     - AccessDeniedStrategy provides the ability to specify the ERROR_CODE of the failed authentication.
-      - <strong>UnauthorizedAccessDeniedStrategy</strong> is the default and not changes to existing functionality (HttpServletRequest.SC_UNAUTHORIZED 401).
-      - <strong>ForbiddenAccessDeniedStrategy</strong> failed authentication will return an Access Forbidden (HttpServletRequest.SC_FORBIDDEN 403); helping hide the fact that the resource exists.
-    - added InitParameter enumeration to NegotiateSecurityFilter to use in parameter validation.
-    - provide a method to identify unsupported parameters.
-    - moved NegotiateSecurityFilterProvider.WWW_AUTHENTICATE to SecurityFilterProvider to be usable by BasicSecurityFilterProvider.
-    - renamed sendUnauthorized to addAuthorizationHeader to align with the description and what the provider does for WWW-Authentication.
-    - Add tests to NegotiateSecurityFilterProviderTests to waffle-tests waffale.sevlet.
+      - **`UnauthorizedAccessDeniedStrategy`** is the default and no changes to existing functionality (HttpServletRequest.SC_UNAUTHORIZED 401).
+      - **`ForbiddenAccessDeniedStrategy`** failed authentication will return an Access Forbidden (HttpServletRequest.SC_FORBIDDEN 403); helps hide the fact that the resource exists.
+    - Added InitParameter enumeration to NegotiateSecurityFilter to use in parameter validation.
+    - Provide a method to identify unsupported parameters.
+    - Moved NegotiateSecurityFilterProvider.WWW_AUTHENTICATE to SecurityFilterProvider to be usable by BasicSecurityFilterProvider.
+    - Renamed sendUnauthorized to addAuthorizationHeader to align with the description and what the provider does for WWW-Authentication.
+    - Added tests to NegotiateSecurityFilterProviderTests to waffle-tests waffale.sevlet.
     - Moved CorsAwareNegotiateSecurityFilterTest to waffle-tests waffale.sevlet.CorsAwareNegotiateSecurityFilterTest.
     - Implemented some code critique guides for import and redundant code and brackets.
-    - renamed excludeCorsPreflight to supportCorsPreflight - this better describes what the filter does if the request contains an OPTIONS Request Method withe the 3 CORS Pre-flight Header Parameters.
-    - renamed excludeBearerAuthorization to supportBearerAuthorization - this better describes what the filter does if the request contains a Bearer Authorization header. 
+    - Renamed excludeCorsPreflight to supportCorsPreflight - this better describes what the filter does if the request contains an OPTIONS Request Method withe the 3 CORS Pre-flight Header Parameters.
+    - Renamed variable excludeBearerAuthorization to supportBearerAuthorization - this better describes what the filter does if the request contains a Bearer Authorization header. 
     
 
 * [#639](https://github.com/Waffle/waffle/issues/639) add enable allow the disabling of filters; useful where change management does not permit the edit of web.xml
     - filters are enabled by default
-    - disableSSO:true will set `enabled` to false
+    - disableSSO:true will set **`enabled`** to false
   
 
 2.3.0 (6/19/2020)

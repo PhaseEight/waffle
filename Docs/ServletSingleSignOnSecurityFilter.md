@@ -58,11 +58,13 @@ Filter Configuration Example
   <filter-class>waffle.servlet.NegotiateSecurityFilter</filter-class>   
   <init-param>
       <param-name>enabled</param-name>
-      <param-value>true</param-value>
+      <param-value>false</param-value>
+      <!-- enabled default is true replaces disableSSO: true -->
   </init-param>
   <init-param>
       <param-name>accessDeniedStrategy</param-name>
-      <param-value>SC_FORBIDDEN</param-value>
+      <param-value>HttpServletRequest.SC_FORBIDDEN</param-value>
+      <!-- accessDeniedStrategy default is HttpServletRequest.SC_UNAUTHORIZED 401 -->
   </init-param>
   <init-param>
       <param-name>principalFormat</param-name>

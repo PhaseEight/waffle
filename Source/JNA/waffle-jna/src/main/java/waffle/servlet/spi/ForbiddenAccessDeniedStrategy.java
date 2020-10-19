@@ -31,13 +31,13 @@ import waffle.util.AuthorizationHeader;
 
 public class ForbiddenAccessDeniedStrategy implements AccessDeniedStrategy {
 
-    final private static int errorCode = HttpServletResponse.SC_FORBIDDEN;
+    private static int errorCode = HttpServletResponse.SC_FORBIDDEN;
 
     @Override
     public void handle(final AuthorizationHeader authorizationHeader, final SecurityFilterProviderCollection providers,
             final HttpServletResponse response) throws IOException {
 
-        AccessDeniedStrategy.sendUnauthorized(authorizationHeader, providers, response, this.errorCode);
+        AccessDeniedStrategy.sendUnauthorized(authorizationHeader, providers, response, errorCode);
     }
 
 }

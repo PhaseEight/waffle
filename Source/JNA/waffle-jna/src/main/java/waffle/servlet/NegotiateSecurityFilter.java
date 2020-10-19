@@ -675,7 +675,7 @@ public class NegotiateSecurityFilter implements Filter {
             // the reverse lookup by simply getting
             // the value from the lookup HashMap.
             InitParameter parameter = lookup.get(paramName);
-            if (parameter == null && paramName.indexOf("/") > 0) {
+            if (parameter == null && (paramName.indexOf("/") > -1)) {
                 parameter = PROVIDER_PARAMETER;
             }
             if (parameter == null) {
