@@ -259,7 +259,7 @@ class NegotiateSecurityFilterProviderTests {
                 filterConfig.getInitParameter("securityFilterProviders");
                 this.minTimes = 1;
                 filterConfig.getInitParameter("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
-                this.times = 1;
+                this.times = 2;
             }
         };
 
@@ -304,9 +304,9 @@ class NegotiateSecurityFilterProviderTests {
                 filterConfig.getInitParameterNames();
                 this.times = 1;
                 filterConfig.getInitParameter("securityFilterProviders");
-                this.times = 1;
+                this.times = 3;
                 filterConfig.getInitParameter("waffle.servlet.spi.BasicSecurityFilterProvider/charset");
-                this.times = 1;
+                this.times = 2;
             }
         };
 

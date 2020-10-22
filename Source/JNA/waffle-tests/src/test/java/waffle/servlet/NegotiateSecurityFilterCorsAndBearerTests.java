@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Test;
 
 import waffle.util.CorsPreFlightCheck;
 
-class NegotiateSecurityFilterTest {
+class NegotiateSecurityFilterCorsAndBearerTests {
 
     /** The negotiate security filter. */
     @Tested
@@ -103,7 +103,7 @@ class NegotiateSecurityFilterTest {
         new Expectations() {
             {
                 filterConfig.getInitParameterNames();
-                this.result = NegotiateSecurityFilterTest.this.initParameterNamesExcludes;
+                this.result = NegotiateSecurityFilterCorsAndBearerTests.this.initParameterNamesExcludes;
                 filterConfig.getInitParameter("principalFormat");
                 this.result = "fqn";
                 filterConfig.getInitParameter("roleFormat");
@@ -160,7 +160,7 @@ class NegotiateSecurityFilterTest {
         new Expectations() {
             {
                 filterConfig.getInitParameterNames();
-                this.result = NegotiateSecurityFilterTest.this.initParameterNamesSupport;
+                this.result = NegotiateSecurityFilterCorsAndBearerTests.this.initParameterNamesSupport;
                 filterConfig.getInitParameter("principalFormat");
                 this.result = "fqn";
                 filterConfig.getInitParameter("roleFormat");
@@ -225,7 +225,7 @@ class NegotiateSecurityFilterTest {
         new Expectations() {
             {
                 filterConfig.getInitParameterNames();
-                this.result = NegotiateSecurityFilterTest.this.initParameterNamesSupport;
+                this.result = NegotiateSecurityFilterCorsAndBearerTests.this.initParameterNamesSupport;
                 filterConfig.getInitParameter("principalFormat");
                 this.result = "fqn";
                 filterConfig.getInitParameter("roleFormat");

@@ -24,7 +24,6 @@
 package waffle.servlet;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static waffle.servlet.NegotiateSecurityFilter.InitParameter.*;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.Secur32.EXTENDED_NAME_FORMAT;
@@ -383,7 +382,8 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("allowGuestLogin", "true");
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "HttpServletRequest.SC_FORBIDDEN");
+        filterConfig.setParameter(NegotiateSecurityFilterInitParameter.ACCESS_DENIED_STRATEGY.getParamName(),
+                "HttpServletRequest.SC_FORBIDDEN");
         this.filter.init(filterConfig);
         this.filter.doFilter(request, response, filterChain);
         final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
@@ -410,7 +410,8 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("allowGuestLogin", "true");
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "HttpServletRequest.SC_UNAUTHORIZED");
+        filterConfig.setParameter(NegotiateSecurityFilterInitParameter.ACCESS_DENIED_STRATEGY.getParamName(),
+                "HttpServletRequest.SC_UNAUTHORIZED");
         this.filter.init(filterConfig);
         this.filter.doFilter(request, response, filterChain);
         final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
@@ -459,7 +460,8 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "HttpServletRequest.SC_FORBIDDEN");
+        filterConfig.setParameter(NegotiateSecurityFilterInitParameter.ACCESS_DENIED_STRATEGY.getParamName(),
+                "HttpServletRequest.SC_FORBIDDEN");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
@@ -478,7 +480,8 @@ public class NegotiateSecurityFilterTests {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "HttpServletRequest.SC_UNAUTHORIZED");
+        filterConfig.setParameter(NegotiateSecurityFilterInitParameter.ACCESS_DENIED_STRATEGY.getParamName(),
+                "HttpServletRequest.SC_UNAUTHORIZED");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
@@ -721,7 +724,7 @@ public class NegotiateSecurityFilterTests {
             {
                 filterConfig.getInitParameterNames();
                 this.result = initParameterNames;
-                filterConfig.getInitParameter(PRINCIPAL_FORMAT.getParamName());
+                filterConfig.getInitParameter(NegotiateSecurityFilterInitParameter.PRINCIPAL_FORMAT.getParamName());
                 this.result = "fqn";
                 filterConfig.getInitParameter("roleFormat");
                 this.result = "fqn";
@@ -787,7 +790,7 @@ public class NegotiateSecurityFilterTests {
             {
                 filterConfig.getInitParameterNames();
                 this.result = initParameterNames;
-                filterConfig.getInitParameter(ENABLED.getParamName());
+                filterConfig.getInitParameter(NegotiateSecurityFilterInitParameter.ENABLED.getParamName());
                 this.result = "false";
             }
         };
