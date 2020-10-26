@@ -45,6 +45,12 @@ public enum NegotiateSecurityFilterInitParameter {
     UNSUPPORTED("unsupported");
 
     private final String paramName;
+    private static final Map<String, NegotiateSecurityFilterInitParameter> lookup = new HashMap<>();
+    static {
+        // Create reverse lookup hash map
+        for (NegotiateSecurityFilterInitParameter ip : NegotiateSecurityFilterInitParameter.values())
+            lookup.put(ip.getParamName(), ip);
+    }
 
     public String getParamName() {
         return this.paramName;
@@ -59,15 +65,8 @@ public enum NegotiateSecurityFilterInitParameter {
         this.paramName = name;
     }
 
-    private static final Map<String, NegotiateSecurityFilterInitParameter> lookup = new HashMap<>();
-    static {
-        // Create reverse lookup hash map
-        for (NegotiateSecurityFilterInitParameter ip : NegotiateSecurityFilterInitParameter.values())
-            lookup.put(ip.getParamName(), ip);
-    }
-
     /*
-     * checks if the paramter is valid or if the parameter style is / identifying the parameter as a provider parameter
+     * check if the parameter is valid or if the parameter contains / identifying the parameter as a provider parameter
      */
     public static NegotiateSecurityFilterInitParameter get(String paramName) {
         // the reverse lookup by simply getting
