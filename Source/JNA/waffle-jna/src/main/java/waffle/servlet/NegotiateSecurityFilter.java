@@ -102,9 +102,9 @@ public class NegotiateSecurityFilter implements Filter {
 
     private boolean impersonate;
 
-    private boolean supportBearerAuthorization;
+    private boolean excludeBearerAuthorization;
 
-    private boolean supportCorsPreflight;
+    private boolean excludeCorsPreflight;
 
     private boolean enabled = true;
 
@@ -334,18 +334,21 @@ public class NegotiateSecurityFilter implements Filter {
 
         if (filterConfig != null) {
             NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] processing filterConfig");
-
-            // check for invalid parameters
             final List<String> parameterNames = Collections.list(filterConfig.getInitParameterNames());
+
+            NegotiateSecurityFilter.LOGGER
+                    .debug("[waffle.servlet.NegotiateSecurityFilter] Validate the Filter Config Init Parameters");
+            validateInitParameters(parameterNames, filterConfig);
+
+            // Validate the Filter Config Init Parameters
+            NegotiateSecurityFilter.LOGGER
+                    .debug("[waffle.servlet.NegotiateSecurityFilter] Retrieve All Implementation Parameters");
             for (String parameterName : parameterNames) {
                 final String parameterValue = filterConfig.getInitParameter(parameterName);
-                NegotiateSecurityFilter.LOGGER.debug("Retrieve all Implementation Parameters Param: '{}={}'",
-                        parameterName, parameterValue);
-                if (NegotiateSecurityFilterInitParameter
-                        .get(parameterName) == NegotiateSecurityFilterInitParameter.UNSUPPORTED) {
-                    NegotiateSecurityFilter.LOGGER.error("error loading '{}': {}", "Parameter is not supported",
-                            parameterName);
-                    throw new ServletException(String.format("%s: %s", "Invalid parameter", parameterName));
+                NegotiateSecurityFilter.LOGGER.debug("Retrieve Implementation Parameter Param: '{}={}'", parameterName,
+                        parameterValue);
+                if (parameterName.contains("/")) {
+                    implParameters.put(parameterName, parameterValue);
                 }
             }
 
@@ -371,32 +374,29 @@ public class NegotiateSecurityFilter implements Filter {
             this.setExcludePatterns(filterConfig
                     .getInitParameter(NegotiateSecurityFilterInitParameter.EXCLUDE_PATTERNS.getParamName()));
 
-            this.setSupportCorsPreflight(Boolean
+            this.setExcludeCorsPreflight(Boolean
                     .parseBoolean(filterConfig.getInitParameter(
-                            NegotiateSecurityFilterInitParameter.EXCLUDE_CORS_PREFLIGHT.getParamName()))
-                    || Boolean.parseBoolean(filterConfig.getInitParameter(
-                            NegotiateSecurityFilterInitParameter.SUPPORT_CORS_PREFLIGHT.getParamName())));
+                            NegotiateSecurityFilterInitParameter.EXCLUDE_CORS_PREFLIGHT.getParamName())));
 
-            this.setSupportBearerAuthorization(Boolean
+            this.setExcludeBearerAuthorization(Boolean
                     .parseBoolean(filterConfig.getInitParameter(
-                            NegotiateSecurityFilterInitParameter.SUPPORT_BEARER_AUTHORIZATION.getParamName()))
-                    || Boolean.parseBoolean(filterConfig.getInitParameter(
                             NegotiateSecurityFilterInitParameter.EXCLUDE_BEARER_AUTHORIZATION.getParamName())));
-
-            for (String parameterName : parameterNames) {
-                final String parameterValue = filterConfig.getInitParameter(parameterName);
-                NegotiateSecurityFilter.LOGGER.debug("Retrieve all Implementation Parameters Param: '{}={}'",
-                        parameterName, parameterValue);
-                if (parameterName.indexOf("/") > -1) {
-                    implParameters.put(parameterName, parameterValue);
-                }
-            }
         }
 
+        configureAuthProvider();
+
+        configureProviders(implParameters);
+
+        NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] started");
+    }
+
+    private void configureAuthProvider() throws ServletException {
         NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] authProvider");
         if (getAuthProvider() != null) {
             try {
-                this.setAuth((IWindowsAuthProvider) Class.forName(getAuthProvider()).getConstructor().newInstance());
+                final IWindowsAuthProvider auth = (IWindowsAuthProvider) Class.forName(getAuthProvider())
+                        .getConstructor().newInstance();
+                this.setAuth(auth);
             } catch (final ClassNotFoundException | IllegalArgumentException | SecurityException
                     | InstantiationException | IllegalAccessException | InvocationTargetException
                     | NoSuchMethodException e) {
@@ -411,14 +411,34 @@ public class NegotiateSecurityFilter implements Filter {
         if (this.getAuth() == null) {
             this.setAuth(new WindowsAuthProviderImpl());
         }
-
-        configureProviders(getProviderNames(), implParameters);
-
-        NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] started");
     }
 
-    private void configureProviders(String[] providerNames, final Map<String, String> implParameters)
+    private void validateInitParameters(List<String> parameterNames, FilterConfig filterConfig)
             throws ServletException {
+        // check for invalid parameters
+        for (String parameterName : parameterNames) {
+            final String parameterValue = filterConfig.getInitParameter(parameterName);
+            NegotiateSecurityFilter.LOGGER.debug("Validate Implementation Parameters Param: '{}={}'", parameterName,
+                    parameterValue);
+            if (NegotiateSecurityFilterInitParameter
+                    .get(parameterName) == NegotiateSecurityFilterInitParameter.UNSUPPORTED) {
+                NegotiateSecurityFilter.LOGGER.error("error loading '{}': {}", "Parameter is not supported",
+                        parameterName);
+                throw new ServletException(String.format("%s: %s", "Invalid parameter", parameterName));
+            }
+            if (NegotiateSecurityFilterInitParameter
+                    .get(parameterName) == NegotiateSecurityFilterInitParameter.PROVIDER_PARAMETER
+                    && parameterName.split("/").length != 2) {
+                NegotiateSecurityFilter.LOGGER.debug("Invalid Implementation Parameter: '{}={}'", parameterName,
+                        parameterValue);
+                throw new ServletException(String.format("%s: %s", "Invalid Impl Parameter", parameterName));
+            }
+
+        }
+    }
+
+    private void configureProviders(final Map<String, String> implParameters) throws ServletException {
+        final String[] providerNames = this.getProviderNames();
         if (providerNames != null) {
             this.setProviders(new SecurityFilterProviderCollection(providerNames, this.getAuth()));
         }
@@ -432,32 +452,27 @@ public class NegotiateSecurityFilter implements Filter {
         NegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.NegotiateSecurityFilter] load provider parameters");
         for (final Map.Entry<String, String> implParameter : implParameters.entrySet()) {
             final String[] classAndParameter = implParameter.getKey().split("/", 2);
-            if (classAndParameter.length == 2) {
-                try {
+            try {
 
-                    NegotiateSecurityFilter.LOGGER.debug("setting {}, {}={}", classAndParameter[0],
-                            classAndParameter[1], implParameter.getValue());
+                NegotiateSecurityFilter.LOGGER.debug("setting {}, {}={}", classAndParameter[0], classAndParameter[1],
+                        implParameter.getValue());
 
-                    final SecurityFilterProvider provider = this.getProviders().getByClassName(classAndParameter[0]);
-                    provider.initParameter(classAndParameter[1], implParameter.getValue());
+                final SecurityFilterProvider provider = this.getProviders().getByClassName(classAndParameter[0]);
+                provider.initParameter(classAndParameter[1], implParameter.getValue());
 
-                } catch (final ClassNotFoundException e) {
-                    NegotiateSecurityFilter.LOGGER.error("invalid class: {} in {}", classAndParameter[0],
-                            implParameter.getKey());
-                    throw new ServletException(e);
-                } catch (final UnsupportedCharsetException e) {
-                    NegotiateSecurityFilter.LOGGER.error("invalid charset: {} in {}", implParameter,
-                            implParameter.getValue());
-                    throw new ServletException(e);
-                } catch (final Exception e) {
-                    NegotiateSecurityFilter.LOGGER.error("{}: error setting '{}': {}", classAndParameter[0],
-                            classAndParameter[1], e.getMessage());
-                    NegotiateSecurityFilter.LOGGER.trace("", e);
-                    throw new ServletException(e);
-                }
-            } else {
-                NegotiateSecurityFilter.LOGGER.error("Invalid parameter: {}", implParameter.getKey());
-                throw new ServletException("Invalid parameter: " + implParameter.getKey());
+            } catch (final ClassNotFoundException e) {
+                NegotiateSecurityFilter.LOGGER.error("invalid class: {} in {}", classAndParameter[0],
+                        implParameter.getKey());
+                throw new ServletException(e);
+            } catch (final UnsupportedCharsetException e) {
+                NegotiateSecurityFilter.LOGGER.error("invalid charset: {} in {}", implParameter,
+                        implParameter.getValue());
+                throw new ServletException(e);
+            } catch (final Exception e) {
+                NegotiateSecurityFilter.LOGGER.error("{}: error setting '{}': {}", classAndParameter[0],
+                        classAndParameter[1], e.getMessage());
+                NegotiateSecurityFilter.LOGGER.trace("", e);
+                throw new ServletException(e);
             }
         }
     }
@@ -468,7 +483,7 @@ public class NegotiateSecurityFilter implements Filter {
      * @param format
      *            Principal format.
      */
-    public void setPrincipalFormat(final String format) {
+    private void setPrincipalFormat(final String format) {
         if (format != null) {
             this.setPrincipalFormat(PrincipalFormat.valueOf(format.toUpperCase(Locale.ENGLISH)));
         }
@@ -522,7 +537,6 @@ public class NegotiateSecurityFilter implements Filter {
         }
     }
 
-    /** The auth. */
     /**
      * Windows auth provider.
      *
@@ -542,7 +556,6 @@ public class NegotiateSecurityFilter implements Filter {
         this.auth = provider;
     }
 
-    /** The allow guest login flag. */
     /**
      * True if guest login is allowed.
      *
@@ -562,7 +575,6 @@ public class NegotiateSecurityFilter implements Filter {
         this.impersonate = value;
     }
 
-    /** The impersonate flag. */
     /**
      * Checks if is impersonate.
      *
@@ -572,7 +584,6 @@ public class NegotiateSecurityFilter implements Filter {
         return this.impersonate;
     }
 
-    /** The providers. */
     /**
      * Security filter providers.
      *
@@ -588,11 +599,11 @@ public class NegotiateSecurityFilter implements Filter {
      * @return true if Bearer Authorization is ignored, false otherwise
      */
     public boolean supportBearerAuthorization() {
-        return this.isSupportBearerAuthorization();
+        return this.excludeBearerAuthorization();
     }
 
-    public void setSupportBearerAuthorization(boolean supportBearerAuthorization) {
-        this.supportBearerAuthorization = supportBearerAuthorization;
+    protected void setExcludeBearerAuthorization(boolean excludeBearerAuthorization) {
+        this.excludeBearerAuthorization = excludeBearerAuthorization;
     }
 
     /**
@@ -601,11 +612,11 @@ public class NegotiateSecurityFilter implements Filter {
      * @return true if Bearer Authorization is ignored, false otherwise
      */
     public boolean supportCorsPreflight() {
-        return this.isSupportCorsPreflight();
+        return this.excludeCorsPreflight();
     }
 
-    public void setSupportCorsPreflight(boolean supportCorsPreflight) {
-        this.supportCorsPreflight = supportCorsPreflight;
+    protected void setExcludeCorsPreflight(boolean excludeCorsPreflight) {
+        this.excludeCorsPreflight = excludeCorsPreflight;
     }
 
     /**
@@ -617,7 +628,7 @@ public class NegotiateSecurityFilter implements Filter {
         return this.accessDeniedStrategy;
     }
 
-    public void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException {
+    protected void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException {
         if (accessDeniedStrategy == null
                 || "HttpServletRequest.SC_UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
             this.setAccessDeniedStrategy(new UnauthorizedAccessDeniedStrategy());
@@ -636,7 +647,7 @@ public class NegotiateSecurityFilter implements Filter {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
+    protected void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
@@ -648,7 +659,7 @@ public class NegotiateSecurityFilter implements Filter {
         this.roleFormat = roleFormat;
     }
 
-    public void setProviders(SecurityFilterProviderCollection providers) {
+    protected void setProviders(SecurityFilterProviderCollection providers) {
         this.providers = providers;
     }
 
@@ -657,29 +668,29 @@ public class NegotiateSecurityFilter implements Filter {
         return excludePatterns;
     }
 
-    public void setExcludePatterns(String excludePatterns) {
+    protected void setExcludePatterns(String excludePatterns) {
         if (excludePatterns != null) {
             this.excludePatterns = excludePatterns.split("\\s+", -1);
         }
     }
 
-    public void setAllowGuestLogin(String allowGuestLogin) {
+    protected void setAllowGuestLogin(String allowGuestLogin) {
         if (allowGuestLogin != null) {
             this.allowGuestLogin = Boolean.parseBoolean(allowGuestLogin);
         }
     }
 
     /** The exclusion for bearer authorization flag. */
-    public boolean isSupportBearerAuthorization() {
-        return supportBearerAuthorization;
+    public boolean excludeBearerAuthorization() {
+        return excludeBearerAuthorization;
     }
 
     /** The exclusions for cors pre flight flag. */
-    public boolean isSupportCorsPreflight() {
-        return supportCorsPreflight;
+    public boolean excludeCorsPreflight() {
+        return excludeCorsPreflight;
     }
 
-    public void setAccessDeniedStrategy(AccessDeniedStrategy accessDeniedStrategy) {
+    protected void setAccessDeniedStrategy(AccessDeniedStrategy accessDeniedStrategy) {
         this.accessDeniedStrategy = accessDeniedStrategy;
     }
 
@@ -687,7 +698,7 @@ public class NegotiateSecurityFilter implements Filter {
         return authProvider;
     }
 
-    public void setAuthProvider(String authProvider) {
+    protected void setAuthProvider(String authProvider) {
         this.authProvider = authProvider;
     }
 
@@ -695,7 +706,7 @@ public class NegotiateSecurityFilter implements Filter {
         return providerNames;
     }
 
-    public void setProviderNames(String providerNames) {
+    protected void setProviderNames(String providerNames) {
         if (providerNames != null) {
             this.providerNames = providerNames.split("\\s+", -1);
         }

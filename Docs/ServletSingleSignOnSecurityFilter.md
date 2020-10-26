@@ -44,8 +44,6 @@ The filter can be configured with the following `init-param` options.
 * `waffle.servlet.spi.BasicSecurityFilterProvider/charset:` The CharSet to be used in the Challenge UTF-8 or US-ASCII default is CharSet.UTF_8:UTF-8.
 * `impersonate:` Allow impersonation. When true the remote user will be impersonated. Note that there is no mapping between the Windows native threads, under which the impersonation takes place, and the Java threads. Thus you'll need to use Windows native APIs to perform impersonated actions. Any action done in Java will still be performed with the user account running the servlet container. 
 * `excludePatterns:` Url patterns to exclude from the filter, uses regex for pattern matching.
-* `supportCorsPreflight:` alias - excludeCorsPreflight: continue when requests are CORS preflight requests. When a request is CORS preflight web security which is an OPTIONS request with 3 valid CORS preflight headers and does not include credentials i.e. credentials would be the method in a CORS preflight request @see https://fetch.spec.whatwg.org/#methods.   
-* `supportBearerAuthorization:` alias - excludeBearerAuthorization: continue when a requests includes a Bearer Authorization header. Continues without Windows Authentication if the request contains a Bearer: Authentication Package. When an API has a mix of Windows and OAUTH covered URIs. renamed from excludeBearerAuthorization
 * `accessDeniedStrategy`: Specify the `SC_UNAUTHORIZED` or `SC_FORBIDDEN` to be used when Authentication fails. Default is SC_UNAUTHORIZED; use SC_FORBIDDEN to hide the presence of the requested resource. `HttpServletRequest.SC_UNAUTHORIZED` or `HttpServletRequest.SC_FORBIDDEN`
  
 
@@ -83,7 +81,7 @@ Filter Configuration Example
       <param-value>true</param-value>
   </init-param>
   <init-param>
-      <param-name>supportCorsPreflight</param-name>
+      <param-name>excludeCorsPreflight</param-name>
       <param-value>true</param-value>
   </init-param>
   <init-param>

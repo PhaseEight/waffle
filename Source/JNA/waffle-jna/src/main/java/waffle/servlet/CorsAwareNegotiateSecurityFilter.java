@@ -59,11 +59,11 @@ public class CorsAwareNegotiateSecurityFilter extends NegotiateSecurityFilter {
         super.init(filterConfig);
         if (filterConfig.getInitParameter("excludeBearerAuthorization") == null
                 && filterConfig.getInitParameter("supportBearerAuthorization") == null) {
-            super.setSupportBearerAuthorization(true);
+            super.setExcludeBearerAuthorization(true);
         }
         if (filterConfig.getInitParameter("excludeCorsPreflight") == null
                 && filterConfig.getInitParameter("supportCorsPreflight") == null) {
-            super.setSupportCorsPreflight(true);
+            super.setExcludeCorsPreflight(true);
         }
         CorsAwareNegotiateSecurityFilter.LOGGER.info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Started");
     }

@@ -20,8 +20,6 @@
     - Added tests to NegotiateSecurityFilterProviderTests to waffle-tests waffale.sevlet.
     - Moved CorsAwareNegotiateSecurityFilterTest to waffle-tests waffale.sevlet.CorsAwareNegotiateSecurityFilterTest.
     - Implemented some code critique guides for import and redundant code and brackets.
-    - Renamed excludeCorsPreflight to supportCorsPreflight - this better describes what the filter does if the request contains an OPTIONS Request Method withe the 3 CORS Pre-flight Header Parameters.
-    - Renamed variable excludeBearerAuthorization to supportBearerAuthorization - this better describes what the filter does if the request contains a Bearer Authorization header. 
     
 
 * [#639](https://github.com/Waffle/waffle/issues/639) add enable allow the disabling of filters; useful where change management does not permit the edit of web.xml

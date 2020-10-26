@@ -38,9 +38,7 @@ public enum NegotiateSecurityFilterInitParameter {
     AUTH_PROVIDER("authProvider"),
     EXCLUDE_PATTERNS("excludePatterns"),
     EXCLUDE_CORS_PREFLIGHT("excludeCorsPreflight"),
-    SUPPORT_CORS_PREFLIGHT("supportCorsPreflight"),
-    SUPPORT_BEARER_AUTHORIZATION("excludeBearerAuthorization"),
-    EXCLUDE_BEARER_AUTHORIZATION("supportBearerAuthorization"),
+    EXCLUDE_BEARER_AUTHORIZATION("excludeBearerAuthorization"),
     PROVIDER_PARAMETER("provider"),
     UNSUPPORTED("unsupported");
 

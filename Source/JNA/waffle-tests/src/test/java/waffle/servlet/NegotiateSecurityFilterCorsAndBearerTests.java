@@ -83,8 +83,8 @@ class NegotiateSecurityFilterCorsAndBearerTests {
                     this.add("impersonate");
                     this.add("securityFilterProviders");
                     this.add("excludePatterns");
-                    this.add("supportCorsPreflight");
-                    this.add("supportBearerAuthorization");
+                    this.add("excludeCorsPreflight");
+                    this.add("excludeBearerAuthorization");
                 }
             });
 
@@ -126,9 +126,9 @@ class NegotiateSecurityFilterCorsAndBearerTests {
         this.negotiateSecurityFilter.init(filterConfig);
 
         final Field excludeCorsPreflight = this.negotiateSecurityFilter.getClass()
-                .getDeclaredField("supportCorsPreflight");
+                .getDeclaredField("excludeCorsPreflight");
         final Field excludeBearerAuthorization = this.negotiateSecurityFilter.getClass()
-                .getDeclaredField("supportBearerAuthorization");
+                .getDeclaredField("excludeBearerAuthorization");
         excludeCorsPreflight.setAccessible(true);
         excludeBearerAuthorization.setAccessible(true);
         Assertions.assertTrue(excludeCorsPreflight.getBoolean(this.negotiateSecurityFilter));
@@ -173,23 +173,23 @@ class NegotiateSecurityFilterCorsAndBearerTests {
                 this.result = "waffle.servlet.spi.BasicSecurityFilterProvider\nwaffle.servlet.spi.NegotiateSecurityFilterProvider";
                 filterConfig.getInitParameter("excludePatterns");
                 this.result = ".*/peter/.*";
-                filterConfig.getInitParameter("supportCorsPreflight");
+                filterConfig.getInitParameter("excludeCorsPreflight");
                 this.result = "true";
-                filterConfig.getInitParameter("supportBearerAuthorization");
+                filterConfig.getInitParameter("excludeBearerAuthorization");
                 this.result = "true";
             }
         };
 
         this.negotiateSecurityFilter.init(filterConfig);
 
-        final Field supportCorsPreflight = this.negotiateSecurityFilter.getClass()
-                .getDeclaredField("supportCorsPreflight");
-        final Field supportBearerAuthorization = this.negotiateSecurityFilter.getClass()
-                .getDeclaredField("supportBearerAuthorization");
-        supportCorsPreflight.setAccessible(true);
-        supportBearerAuthorization.setAccessible(true);
-        Assertions.assertTrue(supportCorsPreflight.getBoolean(this.negotiateSecurityFilter));
-        Assertions.assertTrue(supportBearerAuthorization.getBoolean(this.negotiateSecurityFilter));
+        final Field excludeCorsPreflight = this.negotiateSecurityFilter.getClass()
+                .getDeclaredField("excludeCorsPreflight");
+        final Field excludeBearerAuthorization = this.negotiateSecurityFilter.getClass()
+                .getDeclaredField("excludeBearerAuthorization");
+        excludeCorsPreflight.setAccessible(true);
+        excludeBearerAuthorization.setAccessible(true);
+        Assertions.assertTrue(excludeCorsPreflight.getBoolean(this.negotiateSecurityFilter));
+        Assertions.assertTrue(excludeBearerAuthorization.getBoolean(this.negotiateSecurityFilter));
         Assertions.assertTrue(this.negotiateSecurityFilter.isImpersonate());
         Assertions.assertFalse(this.negotiateSecurityFilter.isAllowGuestLogin());
 
@@ -238,9 +238,9 @@ class NegotiateSecurityFilterCorsAndBearerTests {
                 this.result = "waffle.servlet.spi.BasicSecurityFilterProvider\nwaffle.servlet.spi.NegotiateSecurityFilterProvider";
                 filterConfig.getInitParameter("excludePatterns");
                 this.result = ".*/peter/.*";
-                filterConfig.getInitParameter("supportCorsPreflight");
+                filterConfig.getInitParameter("excludeCorsPreflight");
                 this.result = "true";
-                filterConfig.getInitParameter("supportBearerAuthorization");
+                filterConfig.getInitParameter("excludeBearerAuthorization");
                 this.result = "true";
                 CorsPreFlightCheck.isPreflight(request);
                 this.result = true;
