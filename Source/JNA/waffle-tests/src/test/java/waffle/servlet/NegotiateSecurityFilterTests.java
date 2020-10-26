@@ -666,12 +666,12 @@ public class NegotiateSecurityFilterTests {
 
         this.filter.init(filterConfig);
 
-        final Field supportCorsPreflight = this.filter.getClass().getDeclaredField("supportCorsPreflight");
-        supportCorsPreflight.setAccessible(true);
-        final Field supportBearerAuthorization = this.filter.getClass().getDeclaredField("supportBearerAuthorization");
-        supportBearerAuthorization.setAccessible(true);
-        Assertions.assertTrue(supportCorsPreflight.getBoolean(this.filter));
-        Assertions.assertTrue(supportBearerAuthorization.getBoolean(this.filter));
+        final Field excludeCorsPreflight = this.filter.getClass().getDeclaredField("excludeCorsPreflight");
+        excludeCorsPreflight.setAccessible(true);
+        final Field excludeBearerAuthorization = this.filter.getClass().getDeclaredField("excludeBearerAuthorization");
+        excludeBearerAuthorization.setAccessible(true);
+        Assertions.assertTrue(excludeCorsPreflight.getBoolean(this.filter));
+        Assertions.assertTrue(excludeBearerAuthorization.getBoolean(this.filter));
         Assertions.assertTrue(this.filter.isImpersonate());
         Assertions.assertFalse(this.filter.isAllowGuestLogin());
 

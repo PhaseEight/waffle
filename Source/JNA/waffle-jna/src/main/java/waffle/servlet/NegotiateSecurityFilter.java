@@ -152,7 +152,7 @@ public class NegotiateSecurityFilter implements Filter {
         }
 
         // If exclude cores pre-flight and is pre flight, resume the filter chain
-        if (this.supportCorsPreflight() && CorsPreFlightCheck.isPreflight(request)) {
+        if (this.excludeCorsPreflight() && CorsPreFlightCheck.isPreflight(request)) {
             NegotiateSecurityFilter.LOGGER.info("[waffle.servlet.NegotiateSecurityFilter] CORS preflight");
             chain.doFilter(sreq, sres);
             return;
@@ -161,7 +161,7 @@ public class NegotiateSecurityFilter implements Filter {
         final AuthorizationHeader authorizationHeader = new AuthorizationHeader(request);
 
         // If exclude bearer authorization and is bearer authorization, resume the filter chain
-        if (this.supportBearerAuthorization() && authorizationHeader.isBearerAuthorizationHeader()) {
+        if (this.excludeBearerAuthorization() && authorizationHeader.isBearerAuthorizationHeader()) {
             NegotiateSecurityFilter.LOGGER.info("[waffle.servlet.NegotiateSecurityFilter] Authorization: Bearer");
             chain.doFilter(sreq, sres);
             return;
@@ -374,13 +374,11 @@ public class NegotiateSecurityFilter implements Filter {
             this.setExcludePatterns(filterConfig
                     .getInitParameter(NegotiateSecurityFilterInitParameter.EXCLUDE_PATTERNS.getParamName()));
 
-            this.setExcludeCorsPreflight(Boolean
-                    .parseBoolean(filterConfig.getInitParameter(
-                            NegotiateSecurityFilterInitParameter.EXCLUDE_CORS_PREFLIGHT.getParamName())));
+            this.setExcludeCorsPreflight(Boolean.parseBoolean(filterConfig
+                    .getInitParameter(NegotiateSecurityFilterInitParameter.EXCLUDE_CORS_PREFLIGHT.getParamName())));
 
-            this.setExcludeBearerAuthorization(Boolean
-                    .parseBoolean(filterConfig.getInitParameter(
-                            NegotiateSecurityFilterInitParameter.EXCLUDE_BEARER_AUTHORIZATION.getParamName())));
+            this.setExcludeBearerAuthorization(Boolean.parseBoolean(filterConfig.getInitParameter(
+                    NegotiateSecurityFilterInitParameter.EXCLUDE_BEARER_AUTHORIZATION.getParamName())));
         }
 
         configureAuthProvider();
@@ -598,21 +596,8 @@ public class NegotiateSecurityFilter implements Filter {
      *
      * @return true if Bearer Authorization is ignored, false otherwise
      */
-    public boolean supportBearerAuthorization() {
-        return this.excludeBearerAuthorization();
-    }
-
     protected void setExcludeBearerAuthorization(boolean excludeBearerAuthorization) {
         this.excludeBearerAuthorization = excludeBearerAuthorization;
-    }
-
-    /**
-     * Checks if must continue if Authorization Authentication Scheme is Bearer
-     *
-     * @return true if Bearer Authorization is ignored, false otherwise
-     */
-    public boolean supportCorsPreflight() {
-        return this.excludeCorsPreflight();
     }
 
     protected void setExcludeCorsPreflight(boolean excludeCorsPreflight) {
@@ -640,6 +625,10 @@ public class NegotiateSecurityFilter implements Filter {
                     accessDeniedStrategy));
         }
 
+    }
+
+    protected void setAccessDeniedStrategy(AccessDeniedStrategy accessDeniedStrategy) {
+        this.accessDeniedStrategy = accessDeniedStrategy;
     }
 
     /** The enable filter flag. This will not not do any Windows Authentication */
@@ -688,10 +677,6 @@ public class NegotiateSecurityFilter implements Filter {
     /** The exclusions for cors pre flight flag. */
     public boolean excludeCorsPreflight() {
         return excludeCorsPreflight;
-    }
-
-    protected void setAccessDeniedStrategy(AccessDeniedStrategy accessDeniedStrategy) {
-        this.accessDeniedStrategy = accessDeniedStrategy;
     }
 
     public String getAuthProvider() {
