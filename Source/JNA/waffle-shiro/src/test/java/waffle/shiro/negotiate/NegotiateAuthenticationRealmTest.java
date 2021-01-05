@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Dan Rollo Date: 2/14/13 Time: 11:11 PM
  */
-public final class NegotiateAuthenticationRealmTest {
+class NegotiateAuthenticationRealmTest {
 
     /** The neg auth realm. */
     @Tested

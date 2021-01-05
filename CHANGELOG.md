@@ -26,6 +26,10 @@
     - filters are enabled by default
     - disableSSO:true will set **`enabled`** to false
   
+* Remove use of Group interface and directly use our implementation to allow build on jdk14+ (ie 15/16) (not confirmed JAAS works at those higher versions, just compiles)
+* JAAS support was broken with attempt to use wildfly 10.  Wildfly since changed and that solution is broken.  The wildfly support for 10 is now deprecated, JAAS fixed to support both per PR #1125.
+* Cleanup error prone code usage resulting in header treatment without training '\n'
+* Add github actions windows builds
 
 2.3.0 (6/19/2020)
 =================
