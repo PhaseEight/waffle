@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -476,10 +476,10 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     /**
-     * Set the principal format.
      *
      * @param format
      *            Principal format.
+     *
      */
     private void setPrincipalFormat(final String format) {
         if (format != null) {
@@ -488,21 +488,20 @@ public class NegotiateSecurityFilter implements Filter {
         NegotiateSecurityFilter.LOGGER.debug("principal format: {}", this.getPrincipalFormat());
     }
 
-    /** The principal format. */
     /**
-     * Principal format.
      *
-     * @return Principal format.
+     * @return PrincipalFormat Principal format.
+     *
      */
     public PrincipalFormat getPrincipalFormat() {
         return this.principalFormat;
     }
 
     /**
-     * Set the principal format.
      *
      * @param format
      *            Role format.
+     *
      */
     public void setRoleFormat(final String format) {
         if (format != null) {
@@ -510,11 +509,10 @@ public class NegotiateSecurityFilter implements Filter {
         }
     }
 
-    /** The role format. */
     /**
-     * Principal format.
      *
-     * @return Role format.
+     * @return PrincipalFormat Role format.
+     *
      */
     public PrincipalFormat getRoleFormat() {
         return this.roleFormat;
@@ -522,9 +520,14 @@ public class NegotiateSecurityFilter implements Filter {
 
     /**
      * When a login attempt has failed, the accessDeniedHandler is called
-     * 
+     *
+     * @param authorizationHeader
+     *            the requests authorizationHeader
+     * @param providers
+     *            the providers active for the filter
      * @param response
-     *            HTTP Response
+     *            HTTP Response that providers will update with their Authentication header
+     *
      */
     private void accessDenied(final AuthorizationHeader authorizationHeader,
             final SecurityFilterProviderCollection providers, final HttpServletResponse response) {
@@ -592,22 +595,28 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     /**
-     * Checks if must continue if Authorization Authentication Scheme is Bearer
      *
-     * @return true if Bearer Authorization is ignored, false otherwise
+     * @param excludeBearerAuthorization
+     *            set to True to prevent he Filter from processing a request that has Authentication: Bearer
+     *
      */
     protected void setExcludeBearerAuthorization(boolean excludeBearerAuthorization) {
         this.excludeBearerAuthorization = excludeBearerAuthorization;
     }
 
+    /**
+     *
+     * @param excludeCorsPreflight
+     *            set to True to prevent he Filter from processing a request that are CORS Preflight checks
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request">MDN - Preflight request</a>
+     *
+     */
     protected void setExcludeCorsPreflight(boolean excludeCorsPreflight) {
         this.excludeCorsPreflight = excludeCorsPreflight;
     }
 
     /**
-     * Returns the Access Denied Strategy Object
-     *
-     * @return accessDeniedHandler
+     * @return accessDeniedHandler the Access Denied Strategy Object default is 401
      */
     public AccessDeniedStrategy getAccessDeniedStrategy() {
         return this.accessDeniedStrategy;
@@ -631,20 +640,30 @@ public class NegotiateSecurityFilter implements Filter {
         this.accessDeniedStrategy = accessDeniedStrategy;
     }
 
-    /** The enable filter flag. This will not not do any Windows Authentication */
+    /**
+     *
+     * @return The enable filter flag. When not enabled the filter will not do any Windows Authentication
+     *
+     */
     public boolean isEnabled() {
         return enabled;
     }
 
+    /**
+     *
+     * @param enabled
+     *            Set whether the filter must do any Windows Authentication
+     *
+     */
     protected void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    public void setPrincipalFormat(PrincipalFormat principalFormat) {
+    protected void setPrincipalFormat(PrincipalFormat principalFormat) {
         this.principalFormat = principalFormat;
     }
 
-    public void setRoleFormat(PrincipalFormat roleFormat) {
+    protected void setRoleFormat(PrincipalFormat roleFormat) {
         this.roleFormat = roleFormat;
     }
 
@@ -652,29 +671,51 @@ public class NegotiateSecurityFilter implements Filter {
         this.providers = providers;
     }
 
-    /** The exclusion filter. */
+    /**
+     * @return String[] an array of path patterns that will be excluded from Windows Authentication
+     */
     public String[] getExcludePatterns() {
         return excludePatterns;
     }
 
+    /**
+     * @param excludePatterns
+     *            an array of paths that will be excluded from Windows Authentication
+     */
     protected void setExcludePatterns(String excludePatterns) {
         if (excludePatterns != null) {
             this.excludePatterns = excludePatterns.split("\\s+", -1);
         }
     }
 
+    /**
+     *
+     * @param allowGuestLogin
+     *            Whether or not Windows Authentication should succeed for a windows Guest account
+     *
+     */
     protected void setAllowGuestLogin(String allowGuestLogin) {
         if (allowGuestLogin != null) {
             this.allowGuestLogin = Boolean.parseBoolean(allowGuestLogin);
         }
     }
 
-    /** The exclusion for bearer authorization flag. */
+    /**
+     *
+     * @return boolean True exclude Bearer Authentication Header from Windows Authentication Authentication: Bearer
+     *         a_bearer_token
+     *
+     */
     public boolean excludeBearerAuthorization() {
         return excludeBearerAuthorization;
     }
 
-    /** The exclusions for cors pre flight flag. */
+    /**
+     *
+     * @return boolean True to prevent he Filter from processing a request that are CORS Preflight checks
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request">MDN - Preflight request</a>
+     *
+     */
     public boolean excludeCorsPreflight() {
         return excludeCorsPreflight;
     }
