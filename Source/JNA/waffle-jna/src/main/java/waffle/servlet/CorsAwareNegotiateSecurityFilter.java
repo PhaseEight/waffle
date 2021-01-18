@@ -39,7 +39,11 @@ import waffle.util.AuthorizationHeader;
 import waffle.util.CorsPreFlightCheck;
 
 /**
+ * 
  * The Class CorsAwareNegotiateSecurityFilter.
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request">MDN - Preflight request</a>
+ *
  */
 public class CorsAwareNegotiateSecurityFilter extends NegotiateSecurityFilter {
 
@@ -70,13 +74,13 @@ public class CorsAwareNegotiateSecurityFilter extends NegotiateSecurityFilter {
     public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
             throws IOException, ServletException {
 
-        CorsAwareNegotiateSecurityFilter.LOGGER.debug("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Filtering");
+        CorsAwareNegotiateSecurityFilter.LOGGER.info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Filtering");
 
         final HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         final AuthorizationHeader authorizationHeader = new AuthorizationHeader(httpServletRequest);
 
         if (CorsPreFlightCheck.isPreflight(httpServletRequest)) {
-            CorsAwareNegotiateSecurityFilter.LOGGER.info(
+            CorsAwareNegotiateSecurityFilter.LOGGER.debug(
                     "[waffle.servlet.CorsAwareNegotiateSecurityFilter] Request is CORS preflight; continue filter chain");
             chain.doFilter(request, response);
         } else if (super.excludeBearerAuthorization() && authorizationHeader.isBearerAuthorizationHeader()) {
@@ -85,13 +89,15 @@ public class CorsAwareNegotiateSecurityFilter extends NegotiateSecurityFilter {
             chain.doFilter(request, response);
         } else {
             CorsAwareNegotiateSecurityFilter.LOGGER
-                    .debug("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Request is Not CORS preflight");
+                    .info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Authenticate non CORS Preflight");
 
             super.doFilter(request, response, chain);
 
             CorsAwareNegotiateSecurityFilter.LOGGER
-                    .debug("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Authentication Completed");
+                    .info("[waffle.servlet.CorsAwareNegotiateSecurityFilter] Authentication Completed");
+
         }
+
     }
 
     @Override
