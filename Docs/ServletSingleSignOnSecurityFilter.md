@@ -44,7 +44,7 @@ The filter can be configured with the following `init-param` options.
 * `waffle.servlet.spi.BasicSecurityFilterProvider/charset:` The CharSet to be used in the Challenge UTF-8 or US-ASCII default is CharSet.UTF_8:UTF-8.
 * `impersonate:` Allow impersonation. When true the remote user will be impersonated. Note that there is no mapping between the Windows native threads, under which the impersonation takes place, and the Java threads. Thus you'll need to use Windows native APIs to perform impersonated actions. Any action done in Java will still be performed with the user account running the servlet container. 
 * `excludePatterns:` Url patterns to exclude from the filter, uses regex for pattern matching.
-* `accessDeniedStrategy`: Specify the `SC_UNAUTHORIZED` or `SC_FORBIDDEN` to be used when Authentication fails. Default is SC_UNAUTHORIZED; use SC_FORBIDDEN to hide the presence of the requested resource. `HttpServletRequest.SC_UNAUTHORIZED` or `HttpServletRequest.SC_FORBIDDEN`
+* `accessDeniedStrategy`: Specify the `SC_UNAUTHORIZED` or `SC_FORBIDDEN` to be used when Authentication fails. Default is SC_UNAUTHORIZED; use SC_FORBIDDEN to hide the presence of the requested resource. `HttpServletResponse.SC_UNAUTHORIZED` or `HttpServletResponse.SC_FORBIDDEN`
  
 
 Filter Configuration Example
@@ -61,8 +61,8 @@ Filter Configuration Example
   </init-param>
   <init-param>
       <param-name>accessDeniedStrategy</param-name>
-      <param-value>HttpServletRequest.SC_FORBIDDEN</param-value>
-      <!-- accessDeniedStrategy default is HttpServletRequest.SC_UNAUTHORIZED 401 -->
+      <param-value>HttpServletResponse.SC_FORBIDDEN</param-value>
+      <!-- accessDeniedStrategy default is HttpServletResponse.SC_UNAUTHORIZED 401 -->
   </init-param>
   <init-param>
       <param-name>principalFormat</param-name>

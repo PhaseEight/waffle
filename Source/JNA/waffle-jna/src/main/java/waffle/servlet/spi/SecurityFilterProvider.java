@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ public interface SecurityFilterProvider {
      *
      * @param request
      *            Http Request.
-     * @return True if authentication is required.
+     * @return boolean True if authentication is required.
      */
     boolean isPrincipalException(final HttpServletRequest request);
 
@@ -76,7 +76,7 @@ public interface SecurityFilterProvider {
      *
      * @param securityPackage
      *            Security package.
-     * @return True if the security package is supported, false otherwise.
+     * @return boolean True if the security package is supported, false otherwise.
      */
     boolean isSecurityPackageSupported(final String securityPackage);
 

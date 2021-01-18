@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -181,7 +181,7 @@ public class NegotiateSecurityFilter extends GenericFilterBean {
      *            the response
      * @param authentication
      *            the authentication
-     * @return true, if successful
+     * @return boolean true, if successful
      */
     protected boolean setAuthentication(final HttpServletRequest request, final HttpServletResponse response,
             final Authentication authentication) {
@@ -282,7 +282,7 @@ public class NegotiateSecurityFilter extends GenericFilterBean {
     /**
      * Checks if is allow guest login.
      *
-     * @return true, if is allow guest login
+     * @return boolean true, if is allow guest login
      */
     public boolean isAllowGuestLogin() {
         return this.allowGuestLogin;
@@ -311,7 +311,7 @@ public class NegotiateSecurityFilter extends GenericFilterBean {
     /**
      * Checks if is impersonate.
      *
-     * @return true if impersonation is enabled, false otherwise
+     * @return boolean true if impersonation is enabled, false otherwise
      */
     public boolean isImpersonate() {
         return this.impersonate;

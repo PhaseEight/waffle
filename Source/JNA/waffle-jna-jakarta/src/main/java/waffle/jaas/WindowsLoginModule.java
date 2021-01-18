@@ -110,7 +110,7 @@ public class WindowsLoginModule implements LoginModule {
     /**
      * Use Windows SSPI to authenticate a username with a password.
      *
-     * @return true, if successful
+     * @return boolean true, if successful
      * @throws LoginException
      *             the login exception
      */
@@ -189,7 +189,7 @@ public class WindowsLoginModule implements LoginModule {
     /**
      * Abort a login process.
      *
-     * @return true, if successful
+     * @return boolean true, if successful
      * @throws LoginException
      *             the login exception
      */
@@ -201,7 +201,7 @@ public class WindowsLoginModule implements LoginModule {
     /**
      * Commit principals to the subject.
      *
-     * @return true, if successful
+     * @return boolean true, if successful
      * @throws LoginException
      *             the login exception
      */
@@ -232,7 +232,7 @@ public class WindowsLoginModule implements LoginModule {
     /**
      * Logout a user.
      *
-     * @return true, if successful
+     * @return boolean true, if successful
      * @throws LoginException
      *             the login exception
      */
@@ -254,7 +254,7 @@ public class WindowsLoginModule implements LoginModule {
     /**
      * True if Debug is enabled.
      *
-     * @return True or false.
+     * @return boolean True or false.
      */
     public boolean isDebug() {
         return this.debug;
@@ -345,7 +345,7 @@ public class WindowsLoginModule implements LoginModule {
     /**
      * True if Guest login permitted.
      *
-     * @return True if Guest login permitted, false otherwise.
+     * @return boolean True if Guest login permitted, false otherwise.
      */
     public boolean isAllowGuestLogin() {
         return this.allowGuestLogin;

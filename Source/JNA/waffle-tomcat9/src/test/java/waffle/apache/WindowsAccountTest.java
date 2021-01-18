@@ -73,10 +73,13 @@ class WindowsAccountTest {
     /**
      * Test is serializable.
      *
-     * @throws IOException            Signals that an I/O exception has occurred.
-     * @throws ClassNotFoundException the class not found exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ClassNotFoundException
+     *             the class not found exception
      */
     @Test
+    @SuppressWarnings("BanSerializableRead")
     void testIsSerializable() throws IOException, ClassNotFoundException {
         // serialize
         final ByteArrayOutputStream out = new ByteArrayOutputStream();

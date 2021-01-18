@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -259,7 +259,7 @@ public class NegotiateSecurityFilter implements Filter {
      *            HTTP response.
      * @param chain
      *            Filter chain.
-     * @return True if a user already authenticated.
+     * @return boolean True if a user already authenticated.
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      * @throws ServletException
@@ -515,7 +515,7 @@ public class NegotiateSecurityFilter implements Filter {
     /**
      * True if guest login is allowed.
      *
-     * @return True if guest login is allowed, false otherwise.
+     * @return boolean True if guest login is allowed, false otherwise.
      */
     public boolean isAllowGuestLogin() {
         return this.allowGuestLogin;
@@ -534,7 +534,7 @@ public class NegotiateSecurityFilter implements Filter {
     /**
      * Checks if is impersonate.
      *
-     * @return true if impersonation is enabled, false otherwise
+     * @return boolean true if impersonation is enabled, false otherwise
      */
     public boolean isImpersonate() {
         return this.impersonate;

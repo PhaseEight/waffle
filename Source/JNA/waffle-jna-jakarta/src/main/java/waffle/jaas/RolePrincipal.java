@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,7 @@ public class RolePrincipal implements Principal, Serializable {
      *
      * @param o
      *            Object used for Equality Check.
-     * @return true, if successful
+     * @return boolean true, if successful
      */
     @Override
     public boolean equals(final Object o) {
@@ -83,7 +83,7 @@ public class RolePrincipal implements Principal, Serializable {
     /**
      * Role Principal HashCode for FQN.
      *
-     * @return the int
+     * @return int the int hashCode
      */
     @Override
     public int hashCode() {

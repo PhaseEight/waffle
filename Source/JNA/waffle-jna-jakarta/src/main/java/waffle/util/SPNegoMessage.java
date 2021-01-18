@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ public final class SPNegoMessage {
      *
      * @param message
      *            the message
-     * @return true, if is neg token init
+     * @return booleanbluet true, if is neg token init
      */
     public static boolean isNegTokenInit(final byte[] message) {
 
@@ -91,7 +91,7 @@ public final class SPNegoMessage {
      *
      * @param message
      *            the message
-     * @return true, if is neg token arg
+     * @return boolean true, if is neg token arg
      */
     public static boolean isNegTokenArg(final byte[] message) {
 

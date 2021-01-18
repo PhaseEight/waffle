@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -162,7 +162,7 @@ public class WindowsSecurityContextImpl implements IWindowsSecurityContext {
      *
      * @param ctx
      *            Security context.
-     * @return True if a context was disposed.
+     * @return boolean True if a context was disposed.
      */
     public static boolean dispose(final CtxtHandle ctx) {
         if (ctx != null && !ctx.isNull()) {

@@ -164,7 +164,7 @@ abstract class WaffleAuthenticatorBase extends AuthenticatorBase {
     /**
      * True if Guest login permitted.
      *
-     * @return True if Guest login permitted, false otherwise.
+     * @return boolean True if Guest login permitted, false otherwise.
      */
     public boolean isAllowGuestLogin() {
         return this.allowGuestLogin;

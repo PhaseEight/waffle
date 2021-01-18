@@ -76,7 +76,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Sets the up.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @BeforeEach
     void setUp() throws ServletException {
@@ -96,8 +97,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test challenge get.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testChallengeGET() throws IOException, ServletException {
@@ -118,8 +121,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test challenge post.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testChallengePOST() throws IOException, ServletException {
@@ -160,8 +165,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test negotiate.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testNegotiate() throws IOException, ServletException {
@@ -237,8 +244,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test negotiate previous auth with windows principal.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testNegotiatePreviousAuthWithWindowsPrincipal() throws IOException, ServletException {
@@ -258,8 +267,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test challenge ntlmpost.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testChallengeNTLMPOST() throws IOException, ServletException {
@@ -285,8 +296,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test challenge ntlmput.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testChallengeNTLMPUT() throws IOException, ServletException {
@@ -312,7 +325,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Test init basic security filter provider.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testInitBasicSecurityFilterProvider() throws ServletException {
@@ -334,7 +348,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Test init two security filter providers.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testInitTwoSecurityFilterProviders() throws ServletException {
@@ -349,7 +364,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Test init negotiate security filter provider.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testInitNegotiateSecurityFilterProvider() throws ServletException {

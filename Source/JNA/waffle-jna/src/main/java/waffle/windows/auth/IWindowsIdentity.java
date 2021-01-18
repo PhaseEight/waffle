@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,7 @@ public interface IWindowsIdentity {
     /**
      * Returns true if the identity represents a Guest account.
      *
-     * @return True if the identity represents a Guest account, false otherwise.
+     * @return boolean True if the identity represents a Guest account, false otherwise.
      */
     boolean isGuest();
 }

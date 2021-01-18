@@ -225,7 +225,8 @@ class WindowsAuthProviderTest {
     /**
      * Test security contexts expire.
      *
-     * @throws InterruptedException the interrupted exception
+     * @throws InterruptedException
+     *             the interrupted exception
      */
     @Test
     void testSecurityContextsExpire() throws InterruptedException {

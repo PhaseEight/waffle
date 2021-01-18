@@ -65,14 +65,6 @@ import waffle.windows.auth.impl.WindowsAuthProviderImpl;
 /**
  * A Negotiate (NTLM/Kerberos) Security Filter.
  *
- * Basic Authentication failures result in 403 Forbidden HTTP Status
- * 
- * @see <a href=
- *      "https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication">https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication</a>
- *      <a href="https://tools.ietf.org/html/rfc7617">https://tools.ietf.org/html/rfc7617</a>
- *      <a href="https://tools.ietf.org/html/rfc7235">https://tools.ietf.org/html/rfc7235</a>
- *
- *
  * @author dblock[at]dblock[dot]org*
  */
 public class NegotiateSecurityFilter implements Filter {
@@ -174,7 +166,8 @@ public class NegotiateSecurityFilter implements Filter {
 
         if (authorizationHeader.isNull()) {
             NegotiateSecurityFilter.LOGGER.info("authorization required");
-            this.accessDenied(authorizationHeader, getProviders(), response);
+            AccessDeniedStrategy.sendUnauthorized(authorizationHeader, getProviders(), response,
+                    HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
@@ -266,7 +259,7 @@ public class NegotiateSecurityFilter implements Filter {
      *            HTTP response.
      * @param chain
      *            Filter chain.
-     * @return True if a user already authenticated.
+     * @return boolean True if a user already authenticated.
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      * @throws ServletException
@@ -560,7 +553,7 @@ public class NegotiateSecurityFilter implements Filter {
     /**
      * True if guest login is allowed.
      *
-     * @return True if guest login is allowed, false otherwise.
+     * @return boolean True if guest login is allowed, false otherwise.
      */
     public boolean isAllowGuestLogin() {
         return this.allowGuestLogin;
@@ -579,7 +572,7 @@ public class NegotiateSecurityFilter implements Filter {
     /**
      * Checks if is impersonate.
      *
-     * @return true if impersonation is enabled, false otherwise
+     * @return boolean true if impersonation is enabled, false otherwise
      */
     public boolean isImpersonate() {
         return this.impersonate;
@@ -624,13 +617,13 @@ public class NegotiateSecurityFilter implements Filter {
 
     protected void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException {
         if (accessDeniedStrategy == null
-                || "HttpServletRequest.SC_UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
+                || "HttpServletResponse.SC_UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
             this.setAccessDeniedStrategy(new UnauthorizedAccessDeniedStrategy());
-        } else if ("HttpServletRequest.SC_FORBIDDEN".equalsIgnoreCase(accessDeniedStrategy)) {
+        } else if ("HttpServletResponse.SC_FORBIDDEN".equalsIgnoreCase(accessDeniedStrategy)) {
             this.setAccessDeniedStrategy(new ForbiddenAccessDeniedStrategy());
         } else {
             throw new ServletException(String.format(
-                    "Unsupported Access Denied Strategy: %s; Supported values are HttpServletRequest.SC_UNAUTHORIZED and HttpServletRequest.SC_FORBIDDEN",
+                    "Unsupported Access Denied Strategy: %s; Supported values are HttpServletResponse.SC_UNAUTHORIZED and HttpServletResponse.SC_FORBIDDEN",
                     accessDeniedStrategy));
         }
 

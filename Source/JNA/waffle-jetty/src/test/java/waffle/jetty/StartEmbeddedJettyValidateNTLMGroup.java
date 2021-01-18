@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,7 @@ public class StartEmbeddedJettyValidateNTLMGroup {
          *            the request
          * @param authorizedGroups
          *            the authorized groups
-         * @return true, if is user authorised
+         * @return boolean true, if is user authorised
          */
         private boolean isUserAuthorised(final HttpServletRequest request, final List<String> authorizedGroups) {
             final List<String> usersGroups = this.getUsersGroups(request);

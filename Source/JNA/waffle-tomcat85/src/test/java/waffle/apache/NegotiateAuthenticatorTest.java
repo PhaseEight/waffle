@@ -69,7 +69,8 @@ class NegotiateAuthenticatorTest {
     /**
      * Sets the up.
      *
-     * @throws LifecycleException the lifecycle exception
+     * @throws LifecycleException
+     *             the lifecycle exception
      */
     @BeforeEach
     void setUp() throws LifecycleException {
@@ -89,7 +90,8 @@ class NegotiateAuthenticatorTest {
     /**
      * Tear down.
      *
-     * @throws LifecycleException the lifecycle exception
+     * @throws LifecycleException
+     *             the lifecycle exception
      */
     @AfterEach
     void tearDown() throws LifecycleException {

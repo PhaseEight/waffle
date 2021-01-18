@@ -11,8 +11,8 @@
 
 * [#638](https://github.com/Waffle/waffle/issues/638) add **`waffle.servlet.spi.AccessDeniedStrategy`** similar to Shiro AccessDeniedStrategy
     - AccessDeniedStrategy provides the ability to specify the ERROR_CODE of the failed authentication.
-      - **`UnauthorizedAccessDeniedStrategy`** is the default and no changes to existing functionality (HttpServletRequest.SC_UNAUTHORIZED 401).
-      - **`ForbiddenAccessDeniedStrategy`** failed authentication will return an Access Forbidden (HttpServletRequest.SC_FORBIDDEN 403); helps hide the fact that the resource exists.
+      - **`UnauthorizedAccessDeniedStrategy`** is the default and no changes to existing functionality (HttpServletResponse.SC_UNAUTHORIZED 401).
+      - **`ForbiddenAccessDeniedStrategy`** failed authentication will return an Access Forbidden (HttpServletResponse.SC_FORBIDDEN 403); helps hide the fact that the resource exists.
     - Added InitParameter enumeration to NegotiateSecurityFilter to use in parameter validation.
     - Provide a method to identify unsupported parameters.
     - Moved NegotiateSecurityFilterProvider.WWW_AUTHENTICATE to SecurityFilterProvider to be usable by BasicSecurityFilterProvider.

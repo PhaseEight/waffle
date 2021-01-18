@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,7 @@ public class WaffleProperties {
     /**
      * Checks if is allow guest login.
      *
-     * @return true, if is allow guest login
+     * @return boolean true, if is allow guest login
      */
     public boolean isAllowGuestLogin() {
         return this.allowGuestLogin;
@@ -166,7 +166,7 @@ public class WaffleProperties {
         /**
          * Checks if is enabled.
          *
-         * @return true, if is enabled
+         * @return boolean true, if is enabled
          */
         public boolean isEnabled() {
             return this.enabled;
@@ -185,7 +185,7 @@ public class WaffleProperties {
         /**
          * Checks if is basic enabled.
          *
-         * @return true, if is basic enabled
+         * @return boolean true, if is basic enabled
          */
         public boolean isBasicEnabled() {
             return this.basicEnabled;
@@ -223,7 +223,7 @@ public class WaffleProperties {
         /**
          * Checks if is impersonate.
          *
-         * @return true, if is impersonate
+         * @return boolean true, if is impersonate
          */
         public boolean isImpersonate() {
             return this.impersonate;

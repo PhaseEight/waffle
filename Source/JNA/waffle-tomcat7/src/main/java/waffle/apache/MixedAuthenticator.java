@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,7 +135,7 @@ public class MixedAuthenticator extends WaffleAuthenticatorBase {
      *            the response
      * @param authorizationHeader
      *            the authorization header
-     * @return true, if successful
+     * @return boolean true, if successful
      */
     private boolean negotiate(final Request request, final HttpServletResponse response,
             final AuthorizationHeader authorizationHeader) {
@@ -228,7 +228,7 @@ public class MixedAuthenticator extends WaffleAuthenticatorBase {
      *            the request
      * @param response
      *            the response
-     * @return true, if successful
+     * @return boolean true, if successful
      */
     private boolean post(final Request request, final HttpServletResponse response) {
 

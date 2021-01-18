@@ -78,7 +78,8 @@ class MixedAuthenticatorTest {
     /**
      * Sets the up.
      *
-     * @throws LifecycleException the lifecycle exception
+     * @throws LifecycleException
+     *             the lifecycle exception
      */
     @BeforeEach
     void setUp() throws LifecycleException {
@@ -100,7 +101,8 @@ class MixedAuthenticatorTest {
     /**
      * Tear down.
      *
-     * @throws LifecycleException the lifecycle exception
+     * @throws LifecycleException
+     *             the lifecycle exception
      */
     @AfterEach
     void tearDown() throws LifecycleException {
@@ -274,8 +276,10 @@ class MixedAuthenticatorTest {
     /**
      * Test programmatic security BOTH.
      *
-     * @param identity the identity
-     * @throws ServletException the servlet exception
+     * @param identity
+     *            the identity
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testProgrammaticSecurityBoth(@Mocked final IWindowsIdentity identity) throws ServletException {
@@ -303,8 +307,10 @@ class MixedAuthenticatorTest {
     /**
      * Test programmatic security SID.
      *
-     * @param identity the identity
-     * @throws ServletException the servlet exception
+     * @param identity
+     *            the identity
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testProgrammaticSecuritySID(@Mocked final IWindowsIdentity identity) throws ServletException {
@@ -330,8 +336,10 @@ class MixedAuthenticatorTest {
     /**
      * Test programmatic security NONE.
      *
-     * @param identity the identity
-     * @throws ServletException the servlet exception
+     * @param identity
+     *            the identity
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testProgrammaticSecurityNone(@Mocked final IWindowsIdentity identity) throws ServletException {

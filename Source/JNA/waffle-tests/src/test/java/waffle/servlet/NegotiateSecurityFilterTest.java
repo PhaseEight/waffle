@@ -91,7 +91,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Sets the up.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @BeforeEach
     void setUp() throws ServletException {
@@ -111,8 +112,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test challenge get.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testChallengeGET() throws IOException, ServletException {
@@ -133,8 +136,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test challenge post.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testChallengePOST() throws IOException, ServletException {
@@ -175,8 +180,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test negotiate.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testNegotiate() throws IOException, ServletException {
@@ -252,8 +259,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test negotiate previous auth with windows principal.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testNegotiatePreviousAuthWithWindowsPrincipal() throws IOException, ServletException {
@@ -273,8 +282,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test challenge ntlmpost.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testChallengeNTLMPOST() throws IOException, ServletException {
@@ -300,8 +311,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test challenge ntlmput.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testChallengeNTLMPUT() throws IOException, ServletException {
@@ -327,8 +340,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test challenge ntlmdelete.
      *
-     * @throws IOException      Signals that an I/O exception has occurred.
-     * @throws ServletException the servlet exception
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testChallengeNTLMDELETE() throws IOException, ServletException {
@@ -368,7 +383,7 @@ class NegotiateSecurityFilterTest {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter(NegotiateSecurityFilterInitParameter.ACCESS_DENIED_STRATEGY.getParamName(),
-                "HttpServletRequest.SC_FORBIDDEN");
+                "HttpServletResponse.SC_FORBIDDEN");
         this.filter.init(filterConfig);
         this.filter.doFilter(request, response, filterChain);
         final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
@@ -396,7 +411,7 @@ class NegotiateSecurityFilterTest {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter(NegotiateSecurityFilterInitParameter.ACCESS_DENIED_STRATEGY.getParamName(),
-                "HttpServletRequest.SC_UNAUTHORIZED");
+                "HttpServletResponse.SC_UNAUTHORIZED");
         this.filter.init(filterConfig);
         this.filter.doFilter(request, response, filterChain);
         final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
@@ -410,7 +425,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Test init basic security filter provider.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testInitBasicSecurityFilterProvider() throws ServletException {
@@ -432,7 +448,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Test init basic security filter provider.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     public void testInitBasicSecurityFilterProviderWithForbiddenAccessDeniedHandler() throws ServletException {
@@ -444,7 +461,7 @@ class NegotiateSecurityFilterTest {
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
         filterConfig.setParameter(NegotiateSecurityFilterInitParameter.ACCESS_DENIED_STRATEGY.getParamName(),
-                "HttpServletRequest.SC_FORBIDDEN");
+                "HttpServletResponse.SC_FORBIDDEN");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
@@ -464,7 +481,7 @@ class NegotiateSecurityFilterTest {
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
         filterConfig.setParameter(NegotiateSecurityFilterInitParameter.ACCESS_DENIED_STRATEGY.getParamName(),
-                "HttpServletRequest.SC_UNAUTHORIZED");
+                "HttpServletResponse.SC_UNAUTHORIZED");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
@@ -477,7 +494,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Test init two security filter providers.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testInitTwoSecurityFilterProviders() throws ServletException {
@@ -492,7 +510,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Test init two security filter providers.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     public void testUseNegotiateSecurityFilterProviderFirst() throws ServletException, IOException {
@@ -531,7 +550,8 @@ class NegotiateSecurityFilterTest {
     /**
      * Test init negotiate security filter provider.
      *
-     * @throws ServletException the servlet exception
+     * @throws ServletException
+     *             the servlet exception
      */
     @Test
     void testInitNegotiateSecurityFilterProvider() throws ServletException {
@@ -595,8 +615,10 @@ class NegotiateSecurityFilterTest {
     /**
      * Test cors and bearer authorization I init.
      *
-     * @param filterConfig the filter config
-     * @throws Exception the exception
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
      */
     @Test
     void testCorsAndBearerAuthorizationI_init(@Mocked final FilterConfig filterConfig) throws Exception {
@@ -665,11 +687,16 @@ class NegotiateSecurityFilterTest {
     /**
      * Test exclude cors and OAUTH bearer authorization do filter.
      *
-     * @param request      the request
-     * @param response     the response
-     * @param chain        the chain
-     * @param filterConfig the filter config
-     * @throws Exception the exception
+     * @param request
+     *            the request
+     * @param response
+     *            the response
+     * @param chain
+     *            the chain
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
      */
     @Test
     void testExcludeCorsAndOAUTHBearerAuthorization_doFilter(@Mocked final HttpServletRequest request,
@@ -733,11 +760,16 @@ class NegotiateSecurityFilterTest {
     /**
      * Test exclude cors and OAUTH bearer authorization do filter.
      *
-     * @param request      the request
-     * @param response     the response
-     * @param chain        the chain
-     * @param filterConfig the filter config
-     * @throws Exception the exception
+     * @param request
+     *            the request
+     * @param response
+     *            the response
+     * @param chain
+     *            the chain
+     * @param filterConfig
+     *            the filter config
+     * @throws Exception
+     *             the exception
      */
     @Test
     void testNotEnabledFilter(@Mocked final HttpServletRequest request, @Mocked final HttpServletResponse response,

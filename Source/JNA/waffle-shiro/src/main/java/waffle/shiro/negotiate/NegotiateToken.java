@@ -136,7 +136,7 @@ public class NegotiateToken implements HostAuthenticationToken, RememberMeAuthen
     /**
      * Checks if is ntlm post.
      *
-     * @return true, if is ntlm post
+     * @return boolean true, if is ntlm post
      */
     public boolean isNtlmPost() {
         return this.ntlmPost;

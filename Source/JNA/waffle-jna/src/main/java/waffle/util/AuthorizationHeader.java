@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ public class AuthorizationHeader {
     /**
      * Checks if is null.
      *
-     * @return true, if is null
+     * @return boolean true, if is null
      */
     public boolean isNull() {
         return this.getHeader() == null || this.getHeader().length() == 0;
@@ -125,7 +125,7 @@ public class AuthorizationHeader {
     /**
      * Checks if is ntlm type1 message.
      *
-     * @return true, if is ntlm type1 message
+     * @return boolean true, if is ntlm type1 message
      */
     public boolean isNtlmType1Message() {
         if (this.isNull()) {
@@ -143,7 +143,7 @@ public class AuthorizationHeader {
     /**
      * Checks if is ntlm type3 message.
      *
-     * @return true, if is ntlm type3 message
+     * @return boolean true, if is ntlm type3 message
      */
     public boolean isNtlmType3Message() {
         if (this.isNull()) {
@@ -161,7 +161,7 @@ public class AuthorizationHeader {
     /**
      * Checks if is SP nego message.
      *
-     * @return true, if is SP nego message that contains NegTokenInit
+     * @return boolean true, if is SP nego message that contains NegTokenInit
      */
     public boolean isSPNegTokenInitMessage() {
 
@@ -179,7 +179,7 @@ public class AuthorizationHeader {
      * @see <a href=
      *      "https://msdn.microsoft.com/en-us/library/ms995330.aspx">https://msdn.microsoft.com/en-us/library/ms995330.aspx</a>
      *
-     * @return true, if is SP nego message contains NegTokenTarg
+     * @return boolean true, if is SP nego message contains NegTokenTarg
      */
     public boolean isSPNegTokenArgMessage() {
 
@@ -196,7 +196,7 @@ public class AuthorizationHeader {
      * request with the POSTed data. This is to avoid the situation where user's credentials might be potentially
      * invalid, and all this data is being POSTed across the wire.
      *
-     * @return True if request is an NTLM POST, PUT, or DELETE with an Authorization header and no data.
+     * @return boolean True if request is an NTLM POST, PUT, or DELETE with an Authorization header and no data.
      */
     public boolean isNtlmType1PostAuthorizationHeader() {
         if (!"POST".equals(this.request.getMethod()) && !"PUT".equals(this.request.getMethod())
@@ -228,7 +228,8 @@ public class AuthorizationHeader {
 
     /**
      *
-     * @return true if Authorization Header Authentication Scheme is Basic or NTLM Type2 Message or Negotiate and
+     * @return boolean true if Authorization Header Authentication Scheme is Basic or NTLM Type2 Message or Negotiate
+     *         and
      */
     public boolean isLogonAttempt() {
         if (this.isBasicAuthorizationHeader() || this.isSPNegTokenArgMessage() || this.isNtlmType3Message()) {
