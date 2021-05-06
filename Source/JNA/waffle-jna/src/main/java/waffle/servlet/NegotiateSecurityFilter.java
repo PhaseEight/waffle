@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -652,6 +652,7 @@ public class NegotiateSecurityFilter implements Filter {
             return this.paramName;
         }
 
+        @Override
         public String toString() {
             return this.getParamName();
         }
@@ -660,7 +661,7 @@ public class NegotiateSecurityFilter implements Filter {
             this.paramName = name;
         }
 
-        private static final Map<String, InitParameter> lookup = new HashMap();
+        private static final Map<String, InitParameter> lookup = new HashMap<>();
         static {
             // Create reverse lookup hash map
             for (InitParameter ip : InitParameter.values())

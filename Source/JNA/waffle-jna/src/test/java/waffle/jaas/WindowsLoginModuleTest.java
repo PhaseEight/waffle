@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ import waffle.windows.auth.PrincipalFormat;
 /**
  * The Class WindowsLoginModuleTest.
  */
-public class WindowsLoginModuleTest {
+class WindowsLoginModuleTest {
 
     /** The login module. */
     private WindowsLoginModule loginModule;
@@ -122,7 +122,7 @@ public class WindowsLoginModuleTest {
     void commit_success() throws LoginException {
         Whitebox.setInternalState(this.loginModule, new LinkedHashSet<Principal>());
         this.loginModule.initialize(this.subject, this.callbackHandler, null, this.options);
-        this.loginModule.commit();
+        Assertions.assertTrue(this.loginModule.commit());
     }
 
     /**
@@ -139,7 +139,7 @@ public class WindowsLoginModuleTest {
         principals.add(new UserPrincipal("FQN"));
         Whitebox.setInternalState(this.loginModule, principals);
         this.loginModule.initialize(this.subject, this.callbackHandler, null, this.options);
-        this.loginModule.commit();
+        Assertions.assertTrue(this.loginModule.commit());
     }
 
     /**
@@ -150,14 +150,13 @@ public class WindowsLoginModuleTest {
      */
     @Test
     void commit_withRoles() throws LoginException {
+        this.options.put("debug", "true");
         final Set<Principal> principals = new LinkedHashSet<>();
         principals.add(new UserPrincipal("FQN"));
-        final GroupPrincipal group = new GroupPrincipal("Roles");
-        group.addMember(new RolePrincipal("WindowsGroup"));
-        principals.add(group);
+        principals.add(new RolePrincipal("WindowsGroup"));
         Whitebox.setInternalState(this.loginModule, principals);
         this.loginModule.initialize(this.subject, this.callbackHandler, null, this.options);
-        this.loginModule.commit();
+        Assertions.assertTrue(this.loginModule.commit());
     }
 
     /**

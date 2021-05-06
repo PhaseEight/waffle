@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ import waffle.windows.auth.IWindowsIdentity;
  *
  * @author dblock[at]dblock[dot]org
  */
-public class WindowsPrincipalTest {
+class WindowsPrincipalTest {
 
     /** The Constant TEST_FQN. */
     private static final String TEST_FQN = "ACME\\john.smith";

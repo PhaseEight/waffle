@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -163,16 +163,10 @@ public class WindowsLoginModule implements LoginModule {
             // add the main user principal to the subject principals
             this.principals.addAll(WindowsLoginModule.getUserPrincipals(windowsIdentity, this.principalFormat));
             if (this.roleFormat != PrincipalFormat.NONE) {
-                // create the group principal and add roles as members of the group
-                final GroupPrincipal groupList = new GroupPrincipal("Roles");
+                // add Windows Groups as role principles
                 for (final IWindowsAccount group : windowsIdentity.getGroups()) {
-                    for (final Principal role : WindowsLoginModule.getRolePrincipals(group, this.roleFormat)) {
-                        WindowsLoginModule.LOGGER.debug(" group: {}", role.getName());
-                        groupList.addMember(new RolePrincipal(role.getName()));
-                    }
+                    this.principals.addAll(getRolePrincipals(group, this.roleFormat));
                 }
-                // add the group and roles to the subject principals
-                this.principals.add(groupList);
             }
 
             this.username = windowsIdentity.getFqn();

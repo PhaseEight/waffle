@@ -1,4 +1,4 @@
-3.0.0 (in-progress)
+3.1.0 (in-progress)
 ===================
 * Changed project license to MIT
 * Support different cache solutions (default is caffeine cache) through service loader using '/META-INF/services/waffle.cache.CacheSupplier' pointing to your cache solution.
@@ -28,6 +28,19 @@
     - filters are enabled by default
     - disableSSO:true will set **`enabled`** to false
   
+* Drop JAAS wildfly 10 support as previously deprecated and proper solution in place for newer wildflys.
+* Drop Spring Boot 1 support as end of life for long time and underlying spring 4 now also end of life.
+* Drop Spring Security 4 support as end of life
+* Dispose of guest WindowsIdentity in NegotiateSecurityFilter for Spring Security when guest login is disabled to avoid leaking the object
+
+3.0.0 (12/28/2020)
+==================
+* Relicensed project as MIT
+* Support different cache solutions (default is caffeine cache) through service loader using '/META-INF/services/waffle.cache.CacheSupplier' pointing to your cache solution.
+* Remove use of Group interface and directly use our implementation to allow build on jdk14+ (ie 15/16) (not confirmed JAAS works at those higher versions, just compiles)
+* JAAS support was broken with attempt to use wildfly 10.  Wildfly since changed and that solution is broken.  The wildfly support for 10 is now deprecated, JAAS fixed to support both per PR #1125.
+* Cleanup error prone code usage resulting in header treatment without training '\n'
+* Add github actions windows builds
 
 2.3.0 (6/19/2020)
 =================

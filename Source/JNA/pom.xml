@@ -3,7 +3,7 @@
 
     MIT License
 
-    Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+    Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,12 @@
     SOFTWARE.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.waffle</groupId>
     <artifactId>waffle-parent</artifactId>
-    <version>2.3.1-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>waffle-parent</name>
@@ -91,9 +91,7 @@
         <module>waffle-jna</module>
         <module>waffle-jna-jakarta</module>
         <module>waffle-shiro</module>
-        <module>waffle-spring-boot</module>
         <module>waffle-spring-boot2</module>
-        <module>waffle-spring-security4</module>
         <module>waffle-spring-security5</module>
         <module>waffle-tests</module>
         <module>waffle-tests-jakarta</module>
@@ -114,14 +112,14 @@
         <url>https://github.com/Waffle/waffle/issues</url>
     </issueManagement>
     <ciManagement>
-        <system>travis</system>
-        <url>https://travis-ci.org/Waffle/waffle/</url>
+        <system>github</system>
+        <url>https://github.com/Waffle/waffle/actions</url>
     </ciManagement>
     <distributionManagement>
         <site>
-            <id>gh-pages</id>
+            <id>gh-pages-scm</id>
             <name>Waffle GitHub Pages</name>
-            <url>github:ssh://waffle.github.io/waffle/</url>
+            <url>scm:git:ssh://git@github.com/Waffle/waffle.git</url>
         </site>
         <snapshotRepository>
             <id>ossrh</id>
@@ -135,7 +133,7 @@
 
     <properties>
         <!-- Project Level -->
-        <copyright>2020</copyright>
+        <copyright>2021</copyright>
 
         <!-- Remember to adjust this up as you add unit tests -->
         <jacoco.minimum.coverage>0.0</jacoco.minimum.coverage>
@@ -143,10 +141,16 @@
         <!-- Maven Settings -->
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.testSource>1.8</maven.compiler.testSource>
-        <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
+        <!-- Maven compiler options -->
+        <java.version>1.8</java.version>
+        <java.release.version>8</java.release.version>
+        <java.test.version>${java.version}</java.test.version>
+        <java.test.release.version>${java.release.version}</java.test.release.version>
+
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.testSource>${java.test.version}</maven.compiler.testSource>
+        <maven.compiler.testTarget>${java.test.version}</maven.compiler.testTarget>
 
         <maven.min-version>3.6.3</maven.min-version>
 
@@ -161,88 +165,84 @@
         <checkstyle.config>checkstyle.xml</checkstyle.config>
 
         <!-- Third Party Versions -->
-        <assertj.version>3.17.2</assertj.version>
+        <assertj.version>3.19.0</assertj.version>
         <commons-math.version>3.6.1</commons-math.version>
-        <error-prone.version>2.4.0</error-prone.version>
+        <error-prone.version>2.6.0</error-prone.version>
         <j2objc.version>1.3</j2objc.version>
-        <jmh.version>1.26</jmh.version>
-        <jmockit.version>1.49</jmockit.version>
+        <jmh.version>1.29</jmh.version>
+        <jmockit.version>1.49.1</jmockit.version>
         <jopt-simple.version>5.0.4</jopt-simple.version>
         <jsr305.version>3.0.2</jsr305.version>
-        <junit.version>5.7.0</junit.version>
+        <junit.version>5.7.1</junit.version>
         <slf4j.version>2.0.0-alpha1</slf4j.version>
 
-        <!-- Signature Settings -->
-        <signature.artifact>java18</signature.artifact>
-        <signature.version>1.0</signature.version>
-
         <!-- Plugins -->
-        <animal-sniffer.plugin>1.19</animal-sniffer.plugin>
         <antrun.plugin>3.0.0</antrun.plugin>
         <assembly.plugin>3.3.0</assembly.plugin>
         <build-helper.plugin>3.2.0</build-helper.plugin>
         <changelog.plugin>2.3</changelog.plugin>
         <changes.plugin>2.12.1</changes.plugin>
-        <checkstyle.plugin>3.1.1</checkstyle.plugin>
+        <checkstyle.plugin>3.1.2</checkstyle.plugin>
         <clean.plugin>3.1.0</clean.plugin>
         <compiler.plugin>3.8.1</compiler.plugin>
         <coveralls.plugin>4.3.0</coveralls.plugin>
         <dependency.plugin>3.1.2</dependency.plugin>
-        <dependency-check.plugin>6.0.2</dependency-check.plugin>
+        <dependency-check.plugin>6.1.6</dependency-check.plugin>
         <deploy.plugin>3.0.0-M1</deploy.plugin>
         <directory.plugin>0.3.1</directory.plugin>
         <enforcer.plugin>3.0.0-M3</enforcer.plugin>
-        <formatter.plugin>2.13.0</formatter.plugin>
-        <git-commit-id.plugin>4.0.2</git-commit-id.plugin>
+        <formatter.plugin>2.15.0</formatter.plugin>
+        <git-commit-id.plugin>4.0.4</git-commit-id.plugin>
         <gpg.plugin>1.6</gpg.plugin>
         <htmlcompressor.plugin>1.5.2</htmlcompressor.plugin>
-        <impsort.plugin>1.4.1</impsort.plugin>
+        <impsort.plugin>1.6.0</impsort.plugin>
         <install.plugin>3.0.0-M1</install.plugin>
         <jacoco.plugin>0.8.6</jacoco.plugin>
         <jar.plugin>3.2.0</jar.plugin>
         <javadoc.plugin>3.2.0</javadoc.plugin>
         <jdepend.plugin>2.0</jdepend.plugin>
-        <jxr.plugin>3.0.0</jxr.plugin>
-        <license.plugin>4.0.rc2</license.plugin>
-        <modernizer.plugin>2.1.0</modernizer.plugin>
+        <jxr.plugin>3.1.1</jxr.plugin>
+        <license.plugin>4.1</license.plugin>
+        <modernizer.plugin>2.2.0</modernizer.plugin>
         <nexus-staging.plugin>1.6.8</nexus-staging.plugin>
-        <pmd.plugin>3.13.0</pmd.plugin>
+        <pmd.plugin>3.14.0</pmd.plugin>
         <project-info-reports.plugin>3.1.1</project-info-reports.plugin>
-        <release.plugin>3.0.0-M1</release.plugin>
+        <release.plugin>3.0.0-M4</release.plugin>
         <resources.plugin>3.2.0</resources.plugin>
         <scm.plugin>1.11.2</scm.plugin>
         <source.plugin>3.2.1</source.plugin>
-        <spotbugs.plugin>4.1.4</spotbugs.plugin>
+        <spotbugs.plugin>4.2.3</spotbugs.plugin>
         <site.plugin>3.9.1</site.plugin>
-        <sonar.plugin>3.7.0.1746</sonar.plugin>
+        <sonar.plugin>3.9.0.2155</sonar.plugin>
         <surefire.plugin>3.0.0-M5</surefire.plugin>
         <taglist.plugin>2.4</taglist.plugin>
         <tidy.plugin>1.1.0</tidy.plugin>
         <versions.plugin>2.8.1</versions.plugin>
-        <wagon.plugin>2.0.0</wagon.plugin>
+        <wagon.plugin>2.0.2</wagon.plugin>
         <war.plugin>3.3.1</war.plugin>
         <yuicompressor.plugin>1.5.1</yuicompressor.plugin>
 
         <!-- Plugin Dependency Versions -->
+        <bind-api.version>2.3.3</bind-api.version>
         <bug-pattern.version>1.5.0</bug-pattern.version>
-        <build-tools.version>1.2.4</build-tools.version>
-        <checkstyle.version>8.36.2</checkstyle.version>
+        <build-tools.version>1.2.5</build-tools.version>
+        <checkstyle.version>8.42</checkstyle.version>
         <doxia.version>1.9.1</doxia.version>
         <sb-contrib.version>7.4.7</sb-contrib.version>
-        <findsecbugs.version>1.10.1</findsecbugs.version>
+        <findsecbugs.version>1.11.0</findsecbugs.version>
         <fluido.version>1.9</fluido.version>
         <htmlcompressor.version>1.7.1</htmlcompressor.version>
-        <javac.version>9+181-r4173-1</javac.version>
-        <jgit.version>5.9.0.202009080501-r</jgit.version>
-        <wagon-git.version note="Do not upgrade to 2.0.4 with ssh as it is broken">2.0.3</wagon-git.version>
-        <wagon-ssh.version>3.4.0</wagon-ssh.version>
+        <jgit.version>5.11.0.202103091610-r</jgit.version>
+        <plexus-utils.version>3.3.0</plexus-utils.version>
+        <scm.version>${scm.plugin}</scm.version>
+        <wagon.version>3.4.3</wagon.version>
         <yuicompressor.version>2.4.8</yuicompressor.version>
 
         <!-- Lifecycle Mapping -->
         <lifecycle.version>1.0.0</lifecycle.version>
 
-        <!-- Surefire args -->
-        <argLine>-javaagent:${settings.localRepository}/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar -Djdk.attach.allowAttachSelf</argLine>
+        <!-- Surefire args for jmockit -->
+        <argLine>-javaagent:${settings.localRepository}/com/github/hazendaz/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar -Djdk.attach.allowAttachSelf</argLine>
     </properties>
 
     <dependencies>
@@ -281,7 +281,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jmockit</groupId>
+            <groupId>com.github.hazendaz.jmockit</groupId>
             <artifactId>jmockit</artifactId>
             <version>${jmockit.version}</version>
             <scope>test</scope>
@@ -335,6 +335,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${compiler.plugin}</version>
                     <configuration>
+                        <!-- Error Prone Configuration -->
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>com.google.errorprone</groupId>
@@ -391,14 +392,34 @@
                             <version>${doxia.version}</version>
                         </dependency>
                         <dependency>
-                            <groupId>net.trajano.wagon</groupId>
-                            <artifactId>wagon-git</artifactId>
-                            <version>${wagon-git.version}</version>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-scm</artifactId>
+                            <version>${wagon.version}</version>
                         </dependency>
                         <dependency>
                             <groupId>org.apache.maven.wagon</groupId>
                             <artifactId>wagon-ssh</artifactId>
-                            <version>${wagon-ssh.version}</version>
+                            <version>${wagon.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.maven.scm</groupId>
+                            <artifactId>maven-scm-api</artifactId>
+                            <version>${scm.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.maven.scm</groupId>
+                            <artifactId>maven-scm-provider-gitexe</artifactId>
+                            <version>${scm.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.maven.scm</groupId>
+                            <artifactId>maven-scm-manager-plexus</artifactId>
+                            <version>${scm.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-utils</artifactId>
+                            <version>${plexus-utils.version}</version>
                         </dependency>
                         <!-- For reporting only of versions -->
                         <dependency>
@@ -413,12 +434,8 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${surefire.plugin}</version>
                     <configuration>
-                        <includes>
-                            <include>**/*Test.java</include>
-                            <include>**/*Tests.java</include>
-                        </includes>
-                        <excludes>
-                            <exclude>**/*LoadTests.java</exclude>
+                       <excludes>
+                            <exclude>**/*LoadTest.java</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
@@ -647,6 +664,13 @@
                     <groupId>org.eluder.coveralls</groupId>
                     <artifactId>coveralls-maven-plugin</artifactId>
                     <version>${coveralls.plugin}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.xml.bind</groupId>
+                            <artifactId>jakarta.xml.bind-api</artifactId>
+                            <version>${bind-api.version}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -847,20 +871,6 @@
                     <version>${wagon.plugin}</version>
                 </plugin>
 
-                <!-- Animal Sniffer -->
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>animal-sniffer-maven-plugin</artifactId>
-                    <version>${animal-sniffer.plugin}</version>
-                    <configuration>
-                        <signature>
-                            <groupId>org.codehaus.mojo.signature</groupId>
-                            <artifactId>${signature.artifact}</artifactId>
-                            <version>${signature.version}</version>
-                        </signature>
-                    </configuration>
-                </plugin>
-
                 <!-- Owasp Dependency Scan -->
                 <plugin>
                     <groupId>org.owasp</groupId>
@@ -1009,19 +1019,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>test-sniffer</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <executions>
@@ -1101,7 +1098,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh</artifactId>
-                <version>${wagon-ssh.version}</version>
+                <version>${wagon.version}</version>
             </extension>
         </extensions>
     </build>
@@ -1327,6 +1324,30 @@
         </profile>
 
         <profile>
+            <id>coveralls</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.jacoco</groupId>
+                            <artifactId>jacoco-maven-plugin</artifactId>
+                            <version>${jacoco.plugin}</version>
+                            <!-- TODO: Due to coveralls having issue with jacoco line on method in this class, skip it from coverage metrics until another solution determined. -->
+                            <configuration>
+                                <excludes>
+                                    <exclude>**/*MixedAuthenticator.class</exclude>
+                                    <exclude>**/*NegotiateAuthenticator.class</exclude>
+                                    <exclude>**/*WaffleAuthenticatorBase.class</exclude>
+                                    <exclude>**/*WindowsRealm.class</exclude>
+                                </excludes>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
+        <profile>
             <id>eclipse</id>
             <activation>
                 <property>
@@ -1510,9 +1531,34 @@
             <activation>
                 <jdk>1.8</jdk>
             </activation>
+            <properties>
+                <!-- Plugins -->
+                <animal-sniffer.plugin>1.20</animal-sniffer.plugin>
+
+                <!-- Dependencies -->
+                <javac.version>9+181-r4173-1</javac.version>
+
+                <!-- Signature Settings -->
+                <signature.artifact>java18</signature.artifact>
+                <signature.version>1.0</signature.version>
+            </properties>
             <build>
                 <pluginManagement>
                     <plugins>
+                        <!-- Animal Sniffer -->
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>animal-sniffer-maven-plugin</artifactId>
+                            <version>${animal-sniffer.plugin}</version>
+                            <configuration>
+                                <signature>
+                                    <groupId>org.codehaus.mojo.signature</groupId>
+                                    <artifactId>${signature.artifact}</artifactId>
+                                    <version>${signature.version}</version>
+                                </signature>
+                            </configuration>
+                        </plugin>
+                        <!-- Error prone compiler setup for jdk 8 -->
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-compiler-plugin</artifactId>
@@ -1525,6 +1571,23 @@
                         </plugin>
                     </plugins>
                 </pluginManagement>
+
+                <plugins>
+                    <!-- Animal Sniffer binary check for jdk 8 -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>animal-sniffer-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>test-sniffer</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
             </build>
         </profile>
 
@@ -1533,14 +1596,56 @@
             <activation>
                 <jdk>[9,)</jdk>
             </activation>
+            <properties>
+                <maven.compiler.release>${java.release.version}</maven.compiler.release>
+                <maven.compiler.testRelease>${java.test.release.version}</maven.compiler.testRelease>
+            </properties>
             <build>
                 <pluginManagement>
                     <plugins>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-jar-plugin</artifactId>
+                            <configuration>
+                                <archive>
+                                    <manifestEntries>
+                                        <X-Compile-Release-JDK>${maven.compiler.release}</X-Compile-Release-JDK>
+                                    </manifestEntries>
+                                </archive>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-javadoc-plugin</artifactId>
                             <configuration>
                                 <additionalOptions>-html5</additionalOptions>
+                                <archive>
+                                    <manifestEntries>
+                                        <X-Compile-Release-JDK>${maven.compiler.release}</X-Compile-Release-JDK>
+                                    </manifestEntries>
+                                </archive>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-source-plugin</artifactId>
+                            <configuration>
+                                <archive>
+                                    <manifestEntries>
+                                        <X-Compile-Release-JDK>${maven.compiler.release}</X-Compile-Release-JDK>
+                                    </manifestEntries>
+                                </archive>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-site-plugin</artifactId>
+                            <configuration>
+                                <archive>
+                                    <manifestEntries>
+                                        <X-Compile-Release-JDK>${maven.compiler.release}</X-Compile-Release-JDK>
+                                    </manifestEntries>
+                                </archive>
                             </configuration>
                         </plugin>
                     </plugins>

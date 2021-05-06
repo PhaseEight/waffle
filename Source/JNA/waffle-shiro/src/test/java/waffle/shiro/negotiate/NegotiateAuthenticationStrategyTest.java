@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Dan Rollo Date: 3/18/13 Time: 3:34 PM
  */
-public class NegotiateAuthenticationStrategyTest {
+class NegotiateAuthenticationStrategyTest {
 
     /** The auth strategy. */
     private NegotiateAuthenticationStrategy authStrategy;
@@ -67,4 +67,5 @@ public class NegotiateAuthenticationStrategyTest {
         });
         Assertions.assertNull(exception.getMessage());
     }
+
 }

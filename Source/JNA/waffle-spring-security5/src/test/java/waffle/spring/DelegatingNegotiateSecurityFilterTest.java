@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,11 +56,11 @@ import waffle.windows.auth.PrincipalFormat;
 import waffle.windows.auth.impl.WindowsAccountImpl;
 
 /**
- * The Class NegotiateSecurityFilterTests.
+ * The Class NegotiateSecurityFilterTest.
  *
  * @author [unaor]
  */
-public class DelegatingNegotiateSecurityFilterTest {
+class DelegatingNegotiateSecurityFilterTest {
 
     /** The filter. */
     private DelegatingNegotiateSecurityFilter filter;

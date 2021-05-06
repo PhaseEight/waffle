@@ -42,6 +42,4 @@ Source/JNA/release.properties
 .sts4-cache/
 .cache/
 .profiler/
-
-# vscode
-.vscode/*
+.github/keys/
