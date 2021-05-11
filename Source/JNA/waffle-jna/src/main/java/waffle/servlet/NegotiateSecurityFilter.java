@@ -42,17 +42,17 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest.*;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponse.*;
 import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import waffle.servlet.spi.AccessDeniedStrategy;
-import waffle.servlet.spi.ForbiddenAccessDeniedStrategy;
+import waffle.servlet.spi.AccessDeniedHandler;
 import waffle.servlet.spi.SecurityFilterProvider;
 import waffle.servlet.spi.SecurityFilterProviderCollection;
-import waffle.servlet.spi.UnauthorizedAccessDeniedStrategy;
 import waffle.util.AuthorizationHeader;
 import waffle.util.CorsPreFlightCheck;
 import waffle.windows.auth.IWindowsAuthProvider;
@@ -113,7 +113,7 @@ public class NegotiateSecurityFilter implements Filter {
 
     private boolean enabled = true;
 
-    private AccessDeniedStrategy accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
+    private int logonErrorResponseCode = HttpServletResponse.SC_UNAUTHORIZED;
 
     /**
      * Instantiates a new negotiate security filter.
@@ -354,8 +354,8 @@ public class NegotiateSecurityFilter implements Filter {
                 NegotiateSecurityFilter.LOGGER.debug("Init Param: '{}={}'", parameterName, parameterValue);
                 InitParameter initParam = InitParameter.get(parameterName);
                 switch (initParam) {
-                    case ACCESS_DENIED_STRATEGY:
-                        this.setAccessDeniedStrategy(parameterValue);
+                    case LOGON_ERROR_RESPONSE_CODE:
+                        this.setLogonErrorResponseCode(parameterValue);
                         break;
                     case DISABLE_SSO:
                         this.setEnabled(!Boolean.parseBoolean(parameterValue));
@@ -508,7 +508,7 @@ public class NegotiateSecurityFilter implements Filter {
     private void accessDenied(final AuthorizationHeader authorizationHeader,
             final SecurityFilterProviderCollection providers, final HttpServletResponse response) {
         try {
-            accessDeniedStrategy.handle(authorizationHeader, providers, response);
+            AccessDeniedHandler.sendUnauthorized(authorizationHeader, providers, response, this.logonErrorResponseCode);
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -597,29 +597,36 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     /**
-     * Returns the Access Denied Strategy Object
+     * Returns the error code specified when all challenges have failed
      *
-     * @return accessDeniedHandler
+     * @return int logonErrorResponseCode
      */
-    public AccessDeniedStrategy getAccessDeniedStrategy() {
-        return this.accessDeniedStrategy;
+    public int getLogonErrorResponseCode() {
+        return this.logonErrorResponseCode;
     }
 
-    public void setAccessDeniedStrategy(String accessDeniedStrategy) throws ServletException {
+    public void setLogonErrorResponseCode(String logonErrorResponseCode) throws ServletException {
 
-        if ("HttpServletRequest.SC_UNAUTHORIZED".equalsIgnoreCase(accessDeniedStrategy)) {
-            this.accessDeniedStrategy = new UnauthorizedAccessDeniedStrategy();
-        } else if ("HttpServletRequest.SC_FORBIDDEN".equalsIgnoreCase(accessDeniedStrategy)) {
-            this.accessDeniedStrategy = new ForbiddenAccessDeniedStrategy();
+        if ("HttpServletResponse.SC_UNAUTHORIZED".equalsIgnoreCase(logonErrorResponseCode)) {
+            this.logonErrorResponseCode = HttpServletResponse.SC_UNAUTHORIZED;
+        } else if ("HttpServletResponse.SC_FORBIDDEN".equalsIgnoreCase(logonErrorResponseCode)) {
+            this.logonErrorResponseCode = HttpServletResponse.SC_FORBIDDEN;
+        } else if (Integer.parseInt(logonErrorResponseCode) == HttpServletResponse.SC_UNAUTHORIZED
+                || Integer.parseInt(logonErrorResponseCode) == HttpServletResponse.SC_FORBIDDEN) {
+            this.logonErrorResponseCode = Integer.parseInt(logonErrorResponseCode);
         } else {
             throw new ServletException(String.format(
-                    "Unsupported Access Denied Strategy: %s; Supported values are HttpServletRequest.SC_UNAUTHORIZED and HttpServletRequest.SC_FORBIDDEN",
-                    accessDeniedStrategy));
+                    "Unsupported Access Denied Strategy: %s; Supported values are HttpServletResponse.SC_UNAUTHORIZED, HttpServletResponse.SC_FORBIDDEN, or the integer value of either HttpServletResponse.SC_UNAUTHORIZED or HttpServletResponse.SC_FORBIDDEN.",
+                    logonErrorResponseCode));
         }
 
     }
 
-    /** The enable filter flag. This will not not do any Windows Authentication */
+    /**
+     * The enable filter flag. This will not not do any Windows Authentication
+     * 
+     * @return boolean if the filter is enabled
+     */
     public boolean isEnabled() {
         return enabled;
     }
@@ -629,7 +636,7 @@ public class NegotiateSecurityFilter implements Filter {
     }
 
     public enum InitParameter {
-        ACCESS_DENIED_STRATEGY("accessDeniedStrategy"),
+        LOGON_ERROR_RESPONSE_CODE("logonErrorResponseCode"),
         ENABLED("enabled"),
         DISABLE_SSO("disableSSO"),
         PRINCIPAL_FORMAT("principalFormat"),

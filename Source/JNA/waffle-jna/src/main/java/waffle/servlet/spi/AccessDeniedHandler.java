@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2010-2020 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
+ * Copyright (c) 2010-2021 The Waffle Project Contributors: https://github.com/Waffle/waffle/graphs/contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import waffle.util.AuthorizationHeader;
 
-public interface AccessDeniedStrategy {
+public class AccessDeniedHandler {
+
+    static final String CONNECTION = "Connection";
+
+    private AccessDeniedHandler() {
+    }
 
     /**
      * Decide what to do with
@@ -40,26 +45,28 @@ public interface AccessDeniedStrategy {
      *            the Security Providers configured on the Filter
      * @param response
      *            this is used to send the details to the client
+     * @param responseErrorCode
+     *            the error code to be send on the Reponse.sendError
+     * 
      * @throws IOException
-     *             is thrown while trying to write on the response to the client
+     *             if the response is closed before writting has completed
+     * 
      */
-    void handle(AuthorizationHeader authorizationHeader, SecurityFilterProviderCollection providers,
-            HttpServletResponse response) throws IOException;
-
-    static void sendUnauthorized(AuthorizationHeader authorizationHeader, SecurityFilterProviderCollection provider,
-            HttpServletResponse response, int errorCode) throws IOException {
+    public static void sendUnauthorized(AuthorizationHeader authorizationHeader,
+            SecurityFilterProviderCollection providers, HttpServletResponse response, int responseErrorCode)
+            throws IOException {
         if (authorizationHeader.isNull()) {
-            provider.sendAuthorizationHeaders(response);
-            response.setHeader("Connection", "keep-alive");
-            response.sendError(errorCode);
+            providers.sendAuthorizationHeaders(response);
+            response.setHeader(AccessDeniedHandler.CONNECTION, "keep-alive");
+            response.sendError(responseErrorCode);
         }
-        if (authorizationHeader.isLogonAttempt() && response.getHeader("Connection") == null) {
-            response.setHeader("Connection", "close");
-            response.sendError(errorCode);
+        if (authorizationHeader.isLogonAttempt() && response.getHeader(AccessDeniedHandler.CONNECTION) == null) {
+            response.setHeader(AccessDeniedHandler.CONNECTION, "close");
+            response.sendError(responseErrorCode);
         }
         if ((authorizationHeader.isSPNegTokenArgMessage() || authorizationHeader.isSPNegTokenInitMessage())
-                && response.getHeader("Connection") == null) {
-            response.sendError(errorCode);
+                && response.getHeader(AccessDeniedHandler.CONNECTION) == null) {
+            response.sendError(responseErrorCode);
         }
         response.flushBuffer();
     }

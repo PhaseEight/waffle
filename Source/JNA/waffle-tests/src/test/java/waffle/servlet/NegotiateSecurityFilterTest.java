@@ -62,9 +62,7 @@ import waffle.mock.http.SimpleFilterChain;
 import waffle.mock.http.SimpleFilterConfig;
 import waffle.mock.http.SimpleHttpRequest;
 import waffle.mock.http.SimpleHttpResponse;
-import waffle.servlet.spi.ForbiddenAccessDeniedStrategy;
 import waffle.servlet.spi.SecurityFilterProvider;
-import waffle.servlet.spi.UnauthorizedAccessDeniedStrategy;
 import waffle.util.CorsPreFlightCheck;
 import waffle.windows.auth.IWindowsCredentialsHandle;
 import waffle.windows.auth.PrincipalFormat;
@@ -383,7 +381,7 @@ class NegotiateSecurityFilterTest {
         filterConfig.setParameter("allowGuestLogin", "true");
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "HttpServletRequest.SC_FORBIDDEN");
+        filterConfig.setParameter(LOGON_ERROR_RESPONSE_CODE.getParamName(), "HttpServletResponse.SC_FORBIDDEN");
         this.filter.init(filterConfig);
         this.filter.doFilter(request, response, filterChain);
         final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
@@ -410,7 +408,7 @@ class NegotiateSecurityFilterTest {
         filterConfig.setParameter("allowGuestLogin", "true");
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "HttpServletRequest.SC_UNAUTHORIZED");
+        filterConfig.setParameter(LOGON_ERROR_RESPONSE_CODE.getParamName(), "HttpServletResponse.SC_UNAUTHORIZED");
         this.filter.init(filterConfig);
         this.filter.doFilter(request, response, filterChain);
         final String[] wwwAuthenticates = response.getHeaderValues("WWW-Authenticate");
@@ -459,14 +457,14 @@ class NegotiateSecurityFilterTest {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "HttpServletRequest.SC_FORBIDDEN");
+        filterConfig.setParameter(LOGON_ERROR_RESPONSE_CODE.getParamName(), "HttpServletResponse.SC_FORBIDDEN");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
         Assertions.assertTrue(this.filter.isAllowGuestLogin());
         Assertions.assertEquals(1, this.filter.getProviders().size());
         Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
-        Assertions.assertTrue(this.filter.getAccessDeniedStrategy() instanceof ForbiddenAccessDeniedStrategy);
+        Assertions.assertEquals(this.filter.getLogonErrorResponseCode(), HttpServletResponse.SC_FORBIDDEN);
     }
 
     @Test
@@ -478,14 +476,14 @@ class NegotiateSecurityFilterTest {
         filterConfig.setParameter("securityFilterProviders", "waffle.servlet.spi.BasicSecurityFilterProvider");
         filterConfig.setParameter("waffle.servlet.spi.BasicSecurityFilterProvider/realm", "DemoRealm");
         filterConfig.setParameter("authProvider", MockWindowsAuthProvider.class.getName());
-        filterConfig.setParameter(ACCESS_DENIED_STRATEGY.getParamName(), "HttpServletRequest.SC_UNAUTHORIZED");
+        filterConfig.setParameter(LOGON_ERROR_RESPONSE_CODE.getParamName(), "HttpServletResponse.SC_UNAUTHORIZED");
         this.filter.init(filterConfig);
         Assertions.assertEquals(this.filter.getPrincipalFormat(), PrincipalFormat.SID);
         Assertions.assertEquals(this.filter.getRoleFormat(), PrincipalFormat.NONE);
         Assertions.assertTrue(this.filter.isAllowGuestLogin());
         Assertions.assertEquals(1, this.filter.getProviders().size());
         Assertions.assertTrue(this.filter.getAuth() instanceof MockWindowsAuthProvider);
-        Assertions.assertTrue(this.filter.getAccessDeniedStrategy() instanceof UnauthorizedAccessDeniedStrategy);
+        Assertions.assertEquals(this.filter.getLogonErrorResponseCode(), HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     /**
